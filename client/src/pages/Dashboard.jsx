@@ -167,12 +167,12 @@ export default function Dashboard() {
     const dateQuery = params.get('date') ? `?date=${params.get('date')}` : '';
 
     axios
-      .get(`http://localhost:5000/api/dashboard/summary${dateQuery}`)
+      .get(`/api/dashboard/summary${dateQuery}`)
       .then((res) => setSummary(res.data))
       .catch((err) => console.error(err));
 
     axios
-      .get(`http://localhost:5000/api/dashboard/charts${dateQuery}`)
+      .get(`/api/dashboard/charts${dateQuery}`)
       .then((res) => setCharts(res.data))
       .catch((err) => console.error(err));
   }, [location.search]);

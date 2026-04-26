@@ -32,7 +32,7 @@ export default function Students() {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/students');
+      const res = await axios.get('/api/students');
       setStudents(res.data);
     } catch (error) {
       console.error(error);
@@ -41,7 +41,7 @@ export default function Students() {
 
   const fetchClasses = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/classes');
+      const res = await axios.get('/api/classes');
       setClasses(res.data);
     } catch (error) {
       console.error(error);
@@ -52,12 +52,12 @@ export default function Students() {
     e.preventDefault();
     try {
       if (isEditing) {
-        await axios.put(`http://localhost:5000/api/students/${isEditing}`, {
+        await axios.put(`/api/students/${isEditing}`, {
           ...formData,
           totalFees: Number(formData.totalFees)
         });
       } else {
-        await axios.post('http://localhost:5000/api/students', {
+        await axios.post('/api/students', {
           ...formData,
           totalFees: Number(formData.totalFees)
         });
@@ -88,7 +88,7 @@ export default function Students() {
   const handleDelete = async (id) => {
     if(window.confirm('Are you sure you want to permanently delete this student?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/students/${id}`);
+        await axios.delete(`/api/students/${id}`);
         fetchStudents();
       } catch (error) {
         console.error(error);

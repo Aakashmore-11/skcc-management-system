@@ -15,7 +15,7 @@ export default function Reports() {
 
   const fetchFees = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/fees');
+      const res = await axios.get('/api/fees');
       const data = res.data;
       setFees(data);
       processFinancials(data);

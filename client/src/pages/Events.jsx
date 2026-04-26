@@ -45,7 +45,7 @@ export default function Events() {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/events');
+      const res = await axios.get('/api/events');
       setEvents(res.data);
       if (res.data.length > 0 && !selectedEventId) {
         setSelectedEventId(res.data[0]._id);
@@ -57,7 +57,7 @@ export default function Events() {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/students');
+      const res = await axios.get('/api/students');
       setStudents(res.data);
     } catch (error) {
       console.error(error);
@@ -66,7 +66,7 @@ export default function Events() {
 
   const fetchEventFees = async (eventId) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/events/${eventId}/fees`);
+      const res = await axios.get(`/api/events/${eventId}/fees`);
       setEventFees(res.data);
     } catch (error) {
       console.error(error);
@@ -75,7 +75,7 @@ export default function Events() {
 
   const fetchEventExpenses = async (eventId) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/events/${eventId}/expenses`);
+      const res = await axios.get(`/api/events/${eventId}/expenses`);
       setEventExpenses(res.data);
     } catch (error) {
       console.error(error);
@@ -85,7 +85,7 @@ export default function Events() {
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/events', {
+      await axios.post('/api/events', {
         eventName,
         eventDate,
         feeAmount: Number(feeAmount)
@@ -102,7 +102,7 @@ export default function Events() {
   const handleDeleteEvent = async (id) => {
     if (window.confirm('Are you sure you want to delete this event and all its fee records?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/events/${id}`);
+        await axios.delete(`/api/events/${id}`);
         if (selectedEventId === id) setSelectedEventId('');
         fetchEvents();
       } catch (error) {
@@ -114,7 +114,7 @@ export default function Events() {
   const handlePayFee = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/events/fees', {
+      await axios.post('/api/events/fees', {
         event: selectedEventId,
         student: selectedStudent,
         amountPaid: Number(amountPaid)
@@ -130,7 +130,7 @@ export default function Events() {
   const handleAddExpense = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/events/expenses', {
+      await axios.post('/api/events/expenses', {
         event: selectedEventId,
         description: expenseDescription,
         amount: Number(expenseAmount)
@@ -146,7 +146,7 @@ export default function Events() {
   const handleDeleteExpense = async (id) => {
     if (window.confirm('Remove this expense record?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/events/expenses/${id}`);
+        await axios.delete(`/api/events/expenses/${id}`);
         fetchEventExpenses(selectedEventId);
       } catch (error) {
         console.error(error);

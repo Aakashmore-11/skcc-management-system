@@ -25,7 +25,7 @@ export default function Classes() {
 
   const fetchClasses = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/classes');
+      const res = await axios.get('/api/classes');
       setClasses(res.data);
     } catch (error) {
       console.error('Error fetching classes:', error);
@@ -49,13 +49,13 @@ export default function Classes() {
 
     try {
       if (isEditing) {
-        await axios.put(`http://localhost:5000/api/classes/${isEditing}`, { 
+        await axios.put(`/api/classes/${isEditing}`, { 
           className: finalClassName, 
           batchName, 
           fees: Number(fees) 
         });
       } else {
-        await axios.post('http://localhost:5000/api/classes', { 
+        await axios.post('/api/classes', { 
           className: finalClassName, 
           batchName, 
           fees: Number(fees) 
@@ -88,7 +88,7 @@ export default function Classes() {
   const handleDeleteClass = async (id) => {
     if(window.confirm('Are you sure you want to delete this class?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/classes/${id}`);
+        await axios.delete(`/api/classes/${id}`);
         fetchClasses();
       } catch (error) {
         console.error('Error deleting class:', error);

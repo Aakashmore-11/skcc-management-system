@@ -16,7 +16,7 @@ export default function Fees() {
 
   const fetchFees = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/fees');
+      const res = await axios.get('/api/fees');
       setFees(res.data.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)));
     } catch (error) {
       console.error(error);
@@ -25,7 +25,7 @@ export default function Fees() {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/students');
+      const res = await axios.get('/api/students');
       setStudents(res.data);
     } catch (error) {
       console.error(error);
@@ -35,7 +35,7 @@ export default function Fees() {
   const handleRecordFee = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/api/fees', {
+      await axios.post('/api/fees', {
         studentId: formData.studentId,
         amountPaid: Number(formData.amountPaid)
       });
