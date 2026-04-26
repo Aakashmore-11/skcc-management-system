@@ -20,6 +20,8 @@ export default function Fees() {
       setFees(res.data.sort((a, b) => new Date(b.paymentDate) - new Date(a.paymentDate)));
     } catch (error) {
       console.error(error);
+      const msg = error.response?.data?.error || error.message;
+      alert("Failed to load fees: " + msg);
     }
   };
 
@@ -29,6 +31,8 @@ export default function Fees() {
       setStudents(res.data);
     } catch (error) {
       console.error(error);
+      const msg = error.response?.data?.error || error.message;
+      alert("Failed to load students: " + msg);
     }
   };
 
@@ -45,6 +49,8 @@ export default function Fees() {
       fetchStudents();
     } catch (error) {
       console.error(error);
+      const msg = error.response?.data?.error || error.message;
+      alert("Failed to record fee: " + msg);
     }
   };
 
@@ -127,54 +133,63 @@ export default function Fees() {
       doc.text(`${fee.student?.contactNumber || 'N/A'}`, 55, offsetY + 72);
 
       doc.setFont(undefined, 'normal');
+      const fullClassName = fee.student?.assignedClass?.className || 'N/A';
+      const baseClass = fullClassName.split(' (Div')[0];
+      const division = fullClassName.match(/\((Div .*?)\)/)?.[1] || 'N/A';
+
       doc.text(`Class:`, 125, offsetY + 65);
       doc.setFont(undefined, 'bold');
-      doc.text(`${fee.student?.assignedClass?.className || 'N/A'}`, 145, offsetY + 65);
+      doc.text(`${baseClass}`, 155, offsetY + 65);
 
       doc.setFont(undefined, 'normal');
       doc.text(`Division:`, 125, offsetY + 72);
       doc.setFont(undefined, 'bold');
-      doc.text(`${fee.student?.assignedClass?.batchName || 'N/A'}`, 145, offsetY + 72);
+      doc.text(`${division}`, 155, offsetY + 72);
+
+      doc.setFont(undefined, 'normal');
+      doc.text(`Batch Timing:`, 125, offsetY + 79);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${fee.student?.assignedClass?.batchName || 'N/A'}`, 155, offsetY + 79);
 
       // Section Title: Payment Details
       doc.setFillColor(245, 245, 250);
-      doc.rect(15, offsetY + 80, 180, 8, 'F');
+      doc.rect(15, offsetY + 90, 180, 8, 'F');
       doc.setFontSize(11);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(50, 50, 50);
-      doc.text('TRANSACTION DETAILS', 20, offsetY + 85.5);
+      doc.text('TRANSACTION DETAILS', 20, offsetY + 95.5);
 
       // Payment Details
       doc.setTextColor(0, 0, 0);
       doc.setFont(undefined, 'normal');
       doc.setFontSize(10);
-      doc.text(`Amount Paid:`, 20, offsetY + 97);
+      doc.text(`Amount Paid:`, 20, offsetY + 107);
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(34, 180, 120);
-      doc.text(`INR ${fee.amountPaid.toLocaleString()}/-`, 50, offsetY + 97);
+      doc.text(`INR ${fee.amountPaid.toLocaleString()}/-`, 50, offsetY + 107);
 
       doc.setFont(undefined, 'normal');
       doc.setFontSize(10);
       doc.setTextColor(0, 0, 0);
-      doc.text(`Amount Due:`, 125, offsetY + 97);
+      doc.text(`Amount Due:`, 125, offsetY + 107);
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(220, 80, 80);
-      doc.text(`INR ${fee.student?.feesPending?.toLocaleString() || 0}/-`, 150, offsetY + 97);
+      doc.text(`INR ${(fee.remainingBalance || 0).toLocaleString()}/-`, 150, offsetY + 107);
 
       doc.setLineWidth(0.5);
       doc.setDrawColor(200, 200, 200);
-      doc.line(15, offsetY + 110, 195, offsetY + 110);
+      doc.line(15, offsetY + 120, 195, offsetY + 120);
 
       // Signature Area
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text('Authorized Signature / Stamp', 155, offsetY + 130, null, null, 'center');
+      doc.text('Authorized Signature / Stamp', 155, offsetY + 140, null, null, 'center');
       doc.setLineWidth(0.5);
       doc.setDrawColor(100, 100, 100);
-      doc.line(130, offsetY + 125, 180, offsetY + 125);
+      doc.line(130, offsetY + 135, 180, offsetY + 135);
 
       // Note
       doc.setFontSize(8);
@@ -254,7 +269,7 @@ export default function Fees() {
                 <td><span className="student-id">{fee.receiptNumber}</span></td>
                 <td><div className="student-name">{fee.student?.fullName || 'Unknown/Deleted'}</div></td>
                 <td><span className="badge badge-green">₹{fee.amountPaid.toLocaleString()}</span></td>
-                <td style={{ color: 'var(--text2)' }}>{new Date(fee.paymentDate).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                <td style={{ color: 'var(--text2)' }}>{new Date(fee.paymentDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                 <td>
                   <button onClick={() => generateReceipt(fee)} className="btn" style={{ background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)', padding: '4px 10px', fontSize: '11px' }}>
                     <Download size={12} /> Download

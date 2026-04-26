@@ -2,18 +2,28 @@ const express = require('express');
 const router = express.Router();
 const Fee = require('../models/Fee');
 const Student = require('../models/Student');
+const Class = require('../models/Class');
 const auth = require('../middleware/auth');
 
 // Get all fees
 router.get('/', auth, async (req, res) => {
   try {
-    const fees = await Fee.find().populate({
-      path: 'student',
-      populate: { path: 'assignedClass' }
-    });
+    const fees = await Fee.find()
+      .populate({
+        path: 'student',
+        populate: { 
+          path: 'assignedClass',
+          model: 'Class'
+        }
+      })
+      .exec();
     res.json(fees);
   } catch (err) {
-    res.status(500).send('Server Error');
+    console.error("Error fetching fees:", err);
+    res.status(500).json({ 
+      error: err.message, 
+      stack: err.stack
+    });
   }
 });
 
@@ -22,27 +32,36 @@ router.post('/', auth, async (req, res) => {
   try {
     const { studentId, amountPaid } = req.body;
     
-    // Generate unique receipt number
+    if (!studentId || !amountPaid) {
+      return res.status(400).json({ error: "Student ID and Amount Paid are required." });
+    }
+
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).json({ error: "Student not found" });
+    }
+
+    // 1. Update student's financial record
+    student.feesPaid = (student.feesPaid || 0) + Number(amountPaid);
+    await student.save(); // This triggers the pre-save middleware to update feesPending
+
+    // 2. Generate unique receipt number
     const receiptNumber = `REC-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
 
+    // 3. Create Fee record with snapshot of the remaining balance at THIS moment
     const newFee = new Fee({
       student: studentId,
-      amountPaid,
+      amountPaid: Number(amountPaid),
+      remainingBalance: student.feesPending,
       receiptNumber
     });
     
     const fee = await newFee.save();
     
-    // Update student's paid and pending fees
-    const student = await Student.findById(studentId);
-    if(student) {
-      student.feesPaid += amountPaid;
-      await student.save();
-    }
-    
     res.json(fee);
   } catch (err) {
-    res.status(500).send('Server Error');
+    console.error("Error recording fee:", err);
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 

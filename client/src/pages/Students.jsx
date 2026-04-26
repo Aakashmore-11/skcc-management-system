@@ -9,6 +9,7 @@ export default function Students() {
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [divFilter, setDivFilter] = useState('');
+  const [batchFilter, setBatchFilter] = useState('');
   const location = useLocation();
   
   const [showForm, setShowForm] = useState(false);
@@ -97,10 +98,16 @@ export default function Students() {
   };
 
   const filteredStudents = students.filter(s => {
+    const fullClassName = s.assignedClass?.className || '';
+    const baseClass = fullClassName.split(' (Div')[0];
+    const division = fullClassName.match(/\((Div .*?)\)/)?.[1] || '';
+    
     const matchesSearch = s.fullName.toLowerCase().includes(searchTerm.toLowerCase()) || s.contactNumber.includes(searchTerm);
-    const matchesClass = classFilter === '' || s.assignedClass?.className === classFilter;
-    const matchesDiv = divFilter === '' || s.assignedClass?.batchName === divFilter;
-    return matchesSearch && matchesClass && matchesDiv;
+    const matchesClass = classFilter === '' || baseClass === classFilter;
+    const matchesDiv = divFilter === '' || division === divFilter;
+    const matchesBatch = batchFilter === '' || s.assignedClass?.batchName === batchFilter;
+    
+    return matchesSearch && matchesClass && matchesDiv && matchesBatch;
   });
 
   return (
@@ -158,24 +165,35 @@ export default function Students() {
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-2">
               <select 
-                className="form-control w-full md:w-[150px] h-[34px] text-[13px] px-2.5 py-0" 
+                className="form-control w-full md:w-[130px] h-[34px] text-[13px] px-2.5 py-0" 
                 value={classFilter}
-                onChange={e => setClassFilter(e.target.value)}
+                onChange={e => { setClassFilter(e.target.value); setDivFilter(''); }}
               >
                 <option value="">All Classes</option>
-                {[...new Set(classes.map(c => c.className))].sort().map(name => (
-                  <option key={name} value={name}>Class {name}</option>
+                {[...new Set(classes.map(c => c.className.split(' (Div')[0]))].sort().map(name => (
+                  <option key={name} value={name}>{name}</option>
                 ))}
               </select>
 
               <select 
-                className="form-control w-full md:w-[150px] h-[34px] text-[13px] px-2.5 py-0" 
+                className="form-control w-full md:w-[110px] h-[34px] text-[13px] px-2.5 py-0" 
                 value={divFilter}
                 onChange={e => setDivFilter(e.target.value)}
               >
-                <option value="">All Divisions</option>
+                <option value="">All Div</option>
+                {[...new Set(classes.map(c => c.className.match(/\((Div .*?)\)/)?.[1]).filter(Boolean))].sort().map(div => (
+                  <option key={div} value={div}>{div}</option>
+                ))}
+              </select>
+
+              <select 
+                className="form-control w-full md:w-[130px] h-[34px] text-[13px] px-2.5 py-0" 
+                value={batchFilter}
+                onChange={e => setBatchFilter(e.target.value)}
+              >
+                <option value="">All Batches</option>
                 {[...new Set(classes.map(c => c.batchName))].filter(Boolean).sort().map(batch => (
                   <option key={batch} value={batch}>{batch}</option>
                 ))}
