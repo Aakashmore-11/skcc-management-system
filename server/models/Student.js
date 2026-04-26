@@ -13,8 +13,11 @@ const StudentSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save middleware to calculate pending fees
-StudentSchema.pre('save', function() {
+StudentSchema.pre('save', function(next) {
+  this.feesPaid = this.feesPaid || 0;
+  this.totalFees = this.totalFees || 0;
   this.feesPending = this.totalFees - this.feesPaid;
+  next();
 });
 
 module.exports = mongoose.model('Student', StudentSchema);

@@ -150,6 +150,8 @@ export default function Dashboard() {
     todaysCollection: 0,
     monthlyRevenue: 0,
     totalPendingFees: 0,
+    totalExpectedFees: 0,
+    pendingFeesCount: 0,
   });
 
   const [charts, setCharts] = useState({
@@ -225,9 +227,9 @@ export default function Dashboard() {
           colorClass="card-red"
           iconBg="rgba(240,75,75,0.15)"
           iconColor="#f04b4b"
-          change="23 overdue"
+          change={`${summary.pendingFeesCount} students`}
           changeType="down"
-          period="needs attention"
+          period="with unpaid fees"
         />
       </div>
 
@@ -280,7 +282,7 @@ export default function Dashboard() {
         <div className="chart-card">
           <div className="card-header">
             <div>
-              <div className="card-title">Payment Status</div>
+              <div className="card-title">Collection Status</div>
               <div className="card-subtitle">April 2026</div>
             </div>
           </div>

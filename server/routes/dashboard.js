@@ -39,15 +39,19 @@ router.get('/summary', async (req, res) => {
     ]);
     const monthlyRevenue = monthlyFees.length > 0 ? monthlyFees[0].total : 0;
     
-    // Total pending fees
+    // Total pending and expected fees
     const students = await Student.find();
     const totalPendingFees = students.reduce((acc, curr) => acc + (curr.feesPending || 0), 0);
+    const totalExpectedFees = students.reduce((acc, curr) => acc + (curr.totalFees || 0), 0);
+    const pendingFeesCount = students.filter(s => (s.feesPending || 0) > 0).length;
     
     res.json({
       totalStudents,
       todaysCollection,
       monthlyRevenue,
-      totalPendingFees
+      totalPendingFees,
+      totalExpectedFees,
+      pendingFeesCount
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -97,21 +101,20 @@ router.get('/charts', async (req, res) => {
       monthlyData.push({ month: monthName, amount: monthFees.length > 0 ? monthFees[0].total : 0 });
     }
 
-    // 3. Payment Status (Donut Data)
+    // 3. Collection Status (Donut Data based on Money)
     const students = await Student.find();
-    let paidCount = 0, partialCount = 0, pendingCount = 0;
+    let totalCollected = 0;
+    let totalPending = 0;
     
     students.forEach(s => {
-      if (s.feesPaid === 0) pendingCount++;
-      else if (s.feesPending === 0) paidCount++;
-      else partialCount++;
+      totalCollected += (s.feesPaid || 0);
+      totalPending += (s.feesPending || 0);
     });
     
-    const totalS = students.length || 1;
+    const totalPotential = totalCollected + totalPending || 1;
     const donutData = [
-      { name: "Paid", value: Math.round((paidCount / totalS) * 100) || 0, color: "#4f7cff" },
-      { name: "Partial", value: Math.round((partialCount / totalS) * 100) || 0, color: "#f5a623" },
-      { name: "Pending", value: Math.round((pendingCount / totalS) * 100) || 0, color: "#f04b4b" },
+      { name: "Collected", value: Math.round((totalCollected / totalPotential) * 100) || 0, color: "#22d48f" },
+      { name: "Pending", value: Math.round((totalPending / totalPotential) * 100) || 0, color: "#f04b4b" },
     ];
 
     // 4. Class Progress
