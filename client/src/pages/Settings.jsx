@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Settings as SettingsIcon, User, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Settings as SettingsIcon, User, Lock, CheckCircle2, AlertCircle, Trash2, ShieldAlert, Key } from 'lucide-react';
 
 export default function Settings() {
   const [formData, setFormData] = useState({
@@ -10,6 +10,9 @@ export default function Settings() {
   });
   const [status, setStatus] = useState({ type: '', msg: '' });
   const [loading, setLoading] = useState(false);
+  const [resetConfirm, setResetConfirm] = useState('');
+  const [masterPassword, setMasterPassword] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,18 +44,49 @@ export default function Settings() {
     }
   };
 
+  const handleSystemReset = async () => {
+    if (resetConfirm !== 'RESET ALL DATA') {
+      alert('Step 1 Failed: Please type "RESET ALL DATA" exactly to confirm.');
+      return;
+    }
+
+    if (masterPassword !== 'GJ05DT6333') {
+      alert('Step 2 Failed: Incorrect Master Authorization Password.');
+      return;
+    }
+
+    if (!window.confirm('FINAL WARNING: This is IRREVERSIBLE. All students, classes, fees, and event records will be PERMANENTLY DELETED. Are you absolutely sure?')) {
+      return;
+    }
+
+    setIsResetting(true);
+    try {
+      await axios.delete('/api/system/reset');
+      alert('System has been successfully reset. All operational data has been deleted.');
+      setResetConfirm('');
+      setMasterPassword('');
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to reset system. Check server logs.');
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
-    <div className="max-w-[800px] mx-auto">
+    <div className="max-w-[800px] mx-auto pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <div>
-          <div className="card-title text-[18px]">Security Settings</div>
-          <div className="card-subtitle">Manage your administrative login credentials.</div>
+          <div className="card-title text-[18px]">System Settings</div>
+          <div className="card-subtitle">Manage administrative credentials and system maintenance.</div>
         </div>
       </div>
 
-      <div className="chart-card">
+      {/* Security Section */}
+      <div className="chart-card mb-8">
         <div className="card-title mb-6 flex items-center gap-2">
-          <SettingsIcon size={18} color="var(--accent)" /> Admin Account Details
+          <Lock size={18} color="var(--accent)" /> Admin Security
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -68,12 +102,12 @@ export default function Settings() {
               <label className="form-label flex items-center gap-2">
                 <User size={14} /> New Username
               </label>
-              <input 
-                type="text" 
-                className="form-control" 
-                placeholder="Leave blank to keep current" 
-                value={formData.username} 
-                onChange={e => setFormData({ ...formData, username: e.target.value })} 
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Keep current"
+                value={formData.username}
+                onChange={e => setFormData({ ...formData, username: e.target.value })}
               />
             </div>
 
@@ -81,30 +115,30 @@ export default function Settings() {
               <label className="form-label flex items-center gap-2">
                 <Lock size={14} /> New Password
               </label>
-              <input 
-                type="password" 
-                className="form-control" 
-                placeholder="••••••••" 
-                value={formData.password} 
-                onChange={e => setFormData({ ...formData, password: e.target.value })} 
+              <input
+                type="password"
+                className="form-control"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={e => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
 
             <div className="form-group mb-0 md:col-start-2">
-              <label className="form-label">Confirm New Password</label>
-              <input 
-                type="password" 
-                className="form-control" 
-                placeholder="••••••••" 
-                value={formData.confirmPassword} 
-                onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })} 
+              <label className="form-label">Confirm Password</label>
+              <input
+                type="password"
+                className="form-control"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
               />
             </div>
           </div>
 
           <div className="pt-2">
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="btn btn-primary w-full md:w-auto px-10"
               disabled={loading}
             >
@@ -114,10 +148,60 @@ export default function Settings() {
         </form>
       </div>
 
-      <div className="mt-8 chart-card opacity-60">
-        <div className="card-title text-sm mb-2">Notice</div>
-        <p className="text-xs text-text3 leading-relaxed">
-          Changing your credentials will take effect immediately. Please ensure you remember your new password as there is no automated password recovery system currently configured. If you lose access, manual database intervention will be required.
+      {/* Danger Zone */}
+      <div className="chart-card border border-red-500/20">
+        <div className="card-title mb-4 flex items-center gap-2 text-red-500">
+          <ShieldAlert size={18} /> Danger Zone (System Reset)
+        </div>
+        <p className="text-sm text-text3 mb-6 leading-relaxed">
+          The following action is destructive and irreversible. You must complete two steps of verification to proceed.
+        </p>
+
+        <div className="space-y-4 bg-red-500/5 p-4 rounded-xl border border-red-500/10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="form-group mb-0">
+              <label className="form-label text-red-400 text-xs uppercase tracking-wider font-bold mb-2">Step 1: Type Confirmation Phrase</label>
+              <input
+                type="text"
+                className="form-control border-red-500/20 focus:border-red-500"
+                placeholder="RESET ALL DATA"
+                value={resetConfirm}
+                onChange={e => setResetConfirm(e.target.value)}
+              />
+            </div>
+
+            <div className="form-group mb-0">
+              <label className="form-label text-red-400 text-xs uppercase tracking-wider font-bold mb-2 flex items-center gap-1">
+                Step 2: Master Password
+              </label>
+              <input
+                type="password"
+                className="form-control border-red-500/20 focus:border-red-500"
+                placeholder="Enter authorization key"
+                value={masterPassword}
+                onChange={e => setMasterPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <button
+            onClick={handleSystemReset}
+            disabled={resetConfirm !== 'RESET ALL DATA' || masterPassword === '' || isResetting}
+            className={`btn w-full flex items-center justify-center gap-2 h-[42px] transition-all duration-300 ${resetConfirm === 'RESET ALL DATA' && masterPassword === 'GJ05DT6333' ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20' : 'bg-red-500/10 text-red-500/40 cursor-not-allowed'}`}
+          >
+            <Trash2 size={16} />
+            {isResetting ? 'Wiping Databases...' : 'Format All System Data'}
+          </button>
+
+          <div className="text-[10px] text-center text-red-500/50 mt-2 italic">
+            This action will clear all Student, Fee, Class, and Event databases.
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-8 opacity-60 text-center">
+        <p className="text-xs text-text3">
+          Last system backup: Not configured • Version 1.0.5
         </p>
       </div>
     </div>

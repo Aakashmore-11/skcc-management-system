@@ -23,6 +23,7 @@ app.use('/api/classes', require('./routes/classes'));
 app.use('/api/fees', require('./routes/fees'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/events', require('./routes/events'));
+app.use('/api/system', require('./routes/system'));
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
