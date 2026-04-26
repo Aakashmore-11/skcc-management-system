@@ -38,10 +38,26 @@ export default function Fees() {
 
   const handleRecordFee = async (e) => {
     e.preventDefault();
+    
+    const amount = Number(formData.amountPaid);
+    if (isNaN(amount) || amount <= 0) {
+      alert("Please enter a valid amount.");
+      return;
+    }
+
+    const student = students.find(s => s._id === formData.studentId);
+    const studentName = student ? student.fullName : 'Unknown Student';
+
+    const isConfirmed = window.confirm(
+      `Confirm Payment Recording?\n\nStudent: ${studentName}\nAmount: ₹${amount.toLocaleString()}\n\nAre you sure you want to record this payment? This will update the student's pending balance.`
+    );
+
+    if (!isConfirmed) return;
+
     try {
       await axios.post('/api/fees', {
         studentId: formData.studentId,
-        amountPaid: Number(formData.amountPaid)
+        amountPaid: amount
       });
       setShowForm(false);
       setFormData({ studentId: '', amountPaid: '' });

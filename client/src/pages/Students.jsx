@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Search, Trash2, Users, Edit3 } from 'lucide-react';
+import { Plus, Search, Trash2, Users, Edit3, FileDown, FileSpreadsheet } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 export default function Students() {
   const [students, setStudents] = useState([]);
@@ -110,6 +113,61 @@ export default function Students() {
     return matchesSearch && matchesClass && matchesDiv && matchesBatch;
   });
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Student Directory', 14, 20);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleDateString('en-IN')}`, 14, 28);
+    doc.text(`Total Students: ${filteredStudents.length}`, 14, 33);
+    
+    const tableColumn = ["Name", "Contact", "Class", "Batch", "Total Fees", "Pending"];
+    const tableRows = filteredStudents.map(s => [
+      s.fullName,
+      s.contactNumber,
+      s.assignedClass?.className || 'N/A',
+      s.assignedClass?.batchName || 'N/A',
+      `₹${s.totalFees.toLocaleString()}`,
+      `₹${s.feesPending.toLocaleString()}`
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 40,
+      theme: 'grid',
+      headStyles: { fillColor: [79, 124, 255] },
+      styles: { fontSize: 9 }
+    });
+    
+    doc.save(`Student_Directory_${new Date().toISOString().split('T')[0]}.pdf`);
+  };
+
+  const exportToExcel = () => {
+    const data = filteredStudents.map(s => ({
+      "Full Name": s.fullName,
+      "Contact Number": s.contactNumber,
+      "Address": s.address,
+      "Class": s.assignedClass?.className || 'N/A',
+      "Batch": s.assignedClass?.batchName || 'N/A',
+      "Total Fees": s.totalFees,
+      "Fees Paid": s.totalFees - s.feesPending,
+      "Pending Fees": s.feesPending,
+      "Registration Date": new Date(s.createdAt).toLocaleDateString('en-IN')
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+    
+    // Auto-size columns
+    const max_width = data.reduce((w, r) => Math.max(w, Object.keys(r).reduce((mw, k) => Math.max(mw, String(r[k]).length), 0)), 10);
+    worksheet["!cols"] = Object.keys(data[0] || {}).map(() => ({ wch: 20 }));
+
+    XLSX.writeFile(workbook, `Student_Directory_${new Date().toISOString().split('T')[0]}.xlsx`);
+  };
+
   return (
     <>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
@@ -117,12 +175,20 @@ export default function Students() {
           <div className="card-title text-[18px]">Student Directory</div>
           <div className="card-subtitle">Manage student enrollments and records.</div>
         </div>
-        <button className="btn btn-primary w-full sm:w-auto" onClick={() => { 
-          setShowForm(!showForm); 
-          if(showForm) { setIsEditing(null); setFormData({ fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: '' }); } 
-        }}>
-          <Plus size={16} /> {showForm ? 'Cancel' : 'Register Student'}
-        </button>
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+          <button className="btn" onClick={exportToPDF} style={{ background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)' }}>
+            <FileDown size={16} /> PDF
+          </button>
+          <button className="btn" onClick={exportToExcel} style={{ background: 'rgba(34, 212, 143, 0.1)', color: 'var(--green)' }}>
+            <FileSpreadsheet size={16} /> Excel
+          </button>
+          <button className="btn btn-primary" onClick={() => { 
+            setShowForm(!showForm); 
+            if(showForm) { setIsEditing(null); setFormData({ fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: '' }); } 
+          }}>
+            <Plus size={16} /> {showForm ? 'Cancel' : 'Register Student'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
