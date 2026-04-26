@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Fee = require('../models/Fee');
 const Student = require('../models/Student');
+const auth = require('../middleware/auth');
 
 // Get all fees
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const fees = await Fee.find().populate({
       path: 'student',
@@ -17,7 +18,7 @@ router.get('/', async (req, res) => {
 });
 
 // Record a fee payment
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const { studentId, amountPaid } = req.body;
     

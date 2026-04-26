@@ -3,8 +3,9 @@ const router = express.Router();
 const Student = require('../models/Student');
 const Fee = require('../models/Fee');
 const Class = require('../models/Class');
+const auth = require('../middleware/auth');
 
-router.get('/summary', async (req, res) => {
+router.get('/summary', auth, async (req, res) => {
   try {
     let targetDate = new Date();
     if (req.query.date) {
@@ -58,7 +59,7 @@ router.get('/summary', async (req, res) => {
   }
 });
 
-router.get('/charts', async (req, res) => {
+router.get('/charts', auth, async (req, res) => {
   try {
     let targetDate = new Date();
     if (req.query.date) {

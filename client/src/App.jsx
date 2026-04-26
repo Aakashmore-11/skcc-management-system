@@ -10,6 +10,21 @@ import Reports from './pages/Reports';
 import Schedule from './pages/Schedule';
 import Settings from './pages/Settings';
 import Cookies from 'js-cookie';
+import axios from 'axios';
+
+// Global axios configuration for authentication
+axios.interceptors.request.use(
+  (config) => {
+    const token = Cookies.get('token');
+    if (token) {
+      config.headers['x-auth-token'] = token;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 const ProtectedRoute = ({ children }) => {
   const token = Cookies.get('token');
