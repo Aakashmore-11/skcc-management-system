@@ -30,8 +30,12 @@ export default function Login() {
 
       <div className="w-full max-w-[400px] bg-card border border-border rounded-[14px] p-6 sm:p-8 relative z-10 shadow-2xl">
         <div className="text-center mb-8">
-          <img src="/logo.png" alt="SKCC Logo" className="w-20 h-20 mx-auto mb-4 rounded-full bg-white object-contain" />
-          <h2 className="text-[20px] font-semibold text-text1 mb-1">SKCC Management System</h2>
+          <img
+            src="/login.png"
+            alt="SKCC Logo"
+            className="w-29 h-29 mx-auto -mb-10 rounded object-contain invert"
+          />
+          {/* <h2 className="text-[20px] font-semibold text-text1 mb-1">SKCC Management System</h2> */}
           <p className="text-[12.5px] text-text2">Sign in to administrative console</p>
         </div>
 
