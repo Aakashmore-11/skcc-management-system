@@ -105,12 +105,12 @@ export default function Students() {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <div>
-          <div className="card-title" style={{ fontSize: '18px' }}>Student Directory</div>
+          <div className="card-title text-[18px]">Student Directory</div>
           <div className="card-subtitle">Manage student enrollments and records.</div>
         </div>
-        <button className="btn btn-primary" onClick={() => { 
+        <button className="btn btn-primary w-full sm:w-auto" onClick={() => { 
           setShowForm(!showForm); 
           if(showForm) { setIsEditing(null); setFormData({ fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: '' }); } 
         }}>
@@ -124,20 +124,20 @@ export default function Students() {
             {isEditing ? <Edit3 size={16} color="var(--accent)" /> : <Users size={16} color="var(--accent)" />}
             {isEditing ? 'Update Student Details' : 'New Student Registration'}
           </div>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <div className="form-group"><label className="form-label">Full Name</label><input type="text" className="form-control" placeholder="Student's name" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} required /></div>
-            <div className="form-group"><label className="form-label">Contact Number</label><input type="text" className="form-control" placeholder="+91" value={formData.contactNumber} onChange={e => setFormData({...formData, contactNumber: e.target.value})} required /></div>
-            <div className="form-group"><label className="form-label">Parent Contact (Optional)</label><input type="text" className="form-control" placeholder="+91" value={formData.parentContact} onChange={e => setFormData({...formData, parentContact: e.target.value})} /></div>
-            <div className="form-group"><label className="form-label">Residential Address</label><input type="text" className="form-control" placeholder="Full address" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} required /></div>
-            <div className="form-group">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="form-group mb-0"><label className="form-label">Full Name</label><input type="text" className="form-control" placeholder="Student's name" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} required /></div>
+            <div className="form-group mb-0"><label className="form-label">Contact Number</label><input type="text" className="form-control" placeholder="+91" value={formData.contactNumber} onChange={e => setFormData({...formData, contactNumber: e.target.value})} required /></div>
+            <div className="form-group mb-0"><label className="form-label">Parent Contact (Optional)</label><input type="text" className="form-control" placeholder="+91" value={formData.parentContact} onChange={e => setFormData({...formData, parentContact: e.target.value})} /></div>
+            <div className="form-group mb-0"><label className="form-label">Residential Address</label><input type="text" className="form-control" placeholder="Full address" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} required /></div>
+            <div className="form-group mb-0">
               <label className="form-label">Class & Batch Assignment</label>
               <select className="form-control" value={formData.assignedClass} onChange={e => setFormData({...formData, assignedClass: e.target.value})} required>
                 <option value="">-- Choose Class --</option>
                 {classes.map(c => <option key={c._id} value={c._id}>{c.className} - {c.batchName}</option>)}
               </select>
             </div>
-            <div className="form-group"><label className="form-label">Total Course Fees (₹)</label><input type="number" className="form-control" placeholder="0" value={formData.totalFees} onChange={e => setFormData({...formData, totalFees: e.target.value})} required /></div>
-            <button type="submit" className="btn btn-primary" style={{ gridColumn: 'span 2' }}>
+            <div className="form-group mb-0"><label className="form-label">Total Course Fees (₹)</label><input type="number" className="form-control" placeholder="0" value={formData.totalFees} onChange={e => setFormData({...formData, totalFees: e.target.value})} required /></div>
+            <button type="submit" className="btn btn-primary md:col-span-2">
               {isEditing ? 'Save Changes' : 'Complete Enrollment'}
             </button>
           </form>
@@ -145,44 +145,46 @@ export default function Students() {
       )}
 
       <div className="table-card" style={{ marginBottom: '20px' }}>
-        <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-            <div className="search-box" style={{ flex: 1, maxWidth: '400px' }}>
+        <div className="table-header">
+          <div className="flex flex-col md:flex-row gap-3 w-full">
+            <div className="search-box flex-1 w-full md:max-w-[400px]">
               <Search size={14} />
               <input 
                 type="text" 
-                placeholder="Search by student name or contact number..." 
+                placeholder="Search by student name or contact..." 
                 value={searchTerm} 
                 onChange={e => setSearchTerm(e.target.value)} 
-                style={{ border: 'none', background: 'transparent', outline: 'none', width: '100%', color: 'var(--text1)' }} 
+                className="w-full bg-transparent border-none outline-none text-text1"
               />
             </div>
 
-            <select 
-              className="form-control" 
-              style={{ width: '150px', height: '34px', fontSize: '13px', padding: '0 10px' }}
-              value={classFilter}
-              onChange={e => setClassFilter(e.target.value)}
-            >
-              <option value="">All Classes</option>
-              {[...new Set(classes.map(c => c.className))].sort().map(name => (
-                <option key={name} value={name}>Class {name}</option>
-              ))}
-            </select>
+            <div className="flex gap-3">
+              <select 
+                className="form-control w-full md:w-[150px] h-[34px] text-[13px] px-2.5 py-0" 
+                value={classFilter}
+                onChange={e => setClassFilter(e.target.value)}
+              >
+                <option value="">All Classes</option>
+                {[...new Set(classes.map(c => c.className))].sort().map(name => (
+                  <option key={name} value={name}>Class {name}</option>
+                ))}
+              </select>
 
-            <select 
-              className="form-control" 
-              style={{ width: '150px', height: '34px', fontSize: '13px', padding: '0 10px' }}
-              value={divFilter}
-              onChange={e => setDivFilter(e.target.value)}
-            >
-              <option value="">All Divisions</option>
-              {[...new Set(classes.map(c => c.batchName))].filter(Boolean).sort().map(batch => (
-                <option key={batch} value={batch}>{batch}</option>
-              ))}
-            </select>
+              <select 
+                className="form-control w-full md:w-[150px] h-[34px] text-[13px] px-2.5 py-0" 
+                value={divFilter}
+                onChange={e => setDivFilter(e.target.value)}
+              >
+                <option value="">All Divisions</option>
+                {[...new Set(classes.map(c => c.batchName))].filter(Boolean).sort().map(batch => (
+                  <option key={batch} value={batch}>{batch}</option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
+
+        <div className="overflow-x-auto">
 
         <table className="data-table">
           <thead>
@@ -231,11 +233,12 @@ export default function Students() {
             ))}
             {filteredStudents.length === 0 && (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text3)' }}>No students found matching your criteria.</td>
+                <td colSpan="6" className="text-center p-10 text-text3">No students found matching your criteria.</td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   );

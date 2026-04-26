@@ -77,23 +77,22 @@ export default function Reports() {
 
   return (
     <>
-      <div style={{ marginBottom: '24px' }}>
-        <div className="card-title" style={{ fontSize: '18px' }}>Financial Reports</div>
+      <div className="mb-6">
+        <div className="card-title text-[18px]">Financial Reports</div>
         <div className="card-subtitle">Aggregate revenue analytics and document exports.</div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         
         {/* Monthly Report */}
         <div className="table-card">
-          <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="table-header flex justify-between items-center">
+            <div className="flex items-center gap-2">
               <IndianRupee size={16} color="var(--accent)" />
               <span className="card-title">Monthly Revenue</span>
             </div>
             <button 
-              className="btn btn-primary" 
-              style={{ padding: '6px 12px', fontSize: '12px' }}
+              className="btn btn-primary px-3 py-1.5 text-xs" 
               onClick={() => exportPDF(
                 'Monthly Financial Report', 
                 ['Month', 'Total Revenue Collected'], 
@@ -104,7 +103,8 @@ export default function Reports() {
               <Download size={14} /> Export
             </button>
           </div>
-          <table className="data-table">
+          <div className="overflow-x-auto">
+          <table className="data-table min-w-[300px]">
             <thead>
               <tr>
                 <th>Month</th>
@@ -119,22 +119,22 @@ export default function Reports() {
                 </tr>
               ))}
               {monthlyData.length === 0 && (
-                <tr><td colSpan="2" style={{ textAlign: 'center', padding: '20px', color: 'var(--text3)' }}>No data available</td></tr>
+                <tr><td colSpan="2" className="text-center p-5 text-text3">No data available</td></tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
 
         {/* Yearly Report */}
-        <div className="table-card" style={{ alignSelf: 'start' }}>
-          <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="table-card self-start">
+          <div className="table-header flex justify-between items-center">
+            <div className="flex items-center gap-2">
               <IndianRupee size={16} color="var(--amber)" />
               <span className="card-title">Yearly Revenue</span>
             </div>
             <button 
-              className="btn btn-primary" 
-              style={{ padding: '6px 12px', fontSize: '12px' }}
+              className="btn btn-primary px-3 py-1.5 text-xs" 
               onClick={() => exportPDF(
                 'Yearly Financial Report', 
                 ['Financial Year', 'Total Revenue Collected'], 
@@ -145,7 +145,8 @@ export default function Reports() {
               <Download size={14} /> Export
             </button>
           </div>
-          <table className="data-table">
+          <div className="overflow-x-auto">
+          <table className="data-table min-w-[300px]">
             <thead>
               <tr>
                 <th>Year</th>
@@ -160,10 +161,11 @@ export default function Reports() {
                 </tr>
               ))}
               {yearlyData.length === 0 && (
-                <tr><td colSpan="2" style={{ textAlign: 'center', padding: '20px', color: 'var(--text3)' }}>No data available</td></tr>
+                <tr><td colSpan="2" className="text-center p-5 text-text3">No data available</td></tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
 
       </div>

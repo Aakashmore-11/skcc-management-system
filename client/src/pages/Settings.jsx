@@ -2,10 +2,10 @@ import { Settings as SettingsIcon } from 'lucide-react';
 
 export default function Settings() {
   return (
-    <div className="chart-card" style={{ textAlign: 'center', padding: '60px 20px' }}>
-      <SettingsIcon size={48} color="var(--text2)" style={{ margin: '0 auto 20px' }} />
-      <h2 className="card-title" style={{ fontSize: '24px', marginBottom: '10px' }}>System Settings</h2>
-      <p className="card-subtitle" style={{ fontSize: '15px', maxWidth: '400px', margin: '0 auto' }}>
+    <div className="chart-card text-center py-16 px-5 flex flex-col items-center justify-center min-h-[400px]">
+      <SettingsIcon size={48} color="var(--text2)" className="mb-5" />
+      <h2 className="card-title text-2xl mb-2.5">System Settings</h2>
+      <p className="card-subtitle text-[15px] max-w-[400px] mx-auto leading-relaxed">
         Global system configuration, user management, and administrative preferences will be accessible here.
       </p>
     </div>

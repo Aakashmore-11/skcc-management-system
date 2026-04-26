@@ -269,15 +269,15 @@ export default function Events() {
 
   return (
     <>
-      <div style={{ marginBottom: '24px' }}>
-        <div className="card-title" style={{ fontSize: '18px' }}>Events & Functions</div>
+      <div className="mb-6">
+        <div className="card-title text-[18px]">Events & Functions</div>
         <div className="card-subtitle">Manage extra-curricular events and collect dedicated fees.</div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
         {/* Left Column: Create Event */}
-        <div>
+        <div className="lg:col-span-1">
           <div className="chart-card" style={{ marginBottom: '20px' }}>
             <div className="card-title" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <PartyPopper size={16} color="var(--accent)" /> Create New Event
@@ -305,7 +305,8 @@ export default function Events() {
             <div className="table-header">
               <span className="card-title">Existing Events</span>
             </div>
-            <table className="data-table">
+            <div className="overflow-x-auto">
+            <table className="data-table min-w-[300px]">
               <tbody>
                 {events.map(ev => (
                   <tr key={ev._id} style={{ background: selectedEventId === ev._id ? 'var(--card)' : 'transparent', cursor: 'pointer' }} onClick={() => setSelectedEventId(ev._id)}>
@@ -326,23 +327,24 @@ export default function Events() {
                 )}
               </tbody>
             </table>
+            </div>
           </div>
         </div>
 
         {/* Right Column: Manage Selected Event */}
-        <div>
+        <div className="lg:col-span-2">
           {activeEvent ? (
             <>
-              <div className="chart-card" style={{ marginBottom: '20px', borderTop: '3px solid var(--accent)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <div className="chart-card border-t-4 border-accent mb-5">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
                   <div>
                     <div className="card-title">{activeEvent.eventName} Registrations</div>
                     <div className="card-subtitle">Record student payments for this specific event.</div>
                   </div>
-                  <div className="badge badge-amber" style={{ fontSize: '14px' }}>Event Fee: ₹{activeEvent.feeAmount}</div>
+                  <div className="badge badge-amber text-[14px]">Event Fee: ₹{activeEvent.feeAmount}</div>
                 </div>
 
-                <form onSubmit={handlePayFee} style={{ display: 'flex', gap: '12px', alignItems: 'flex-end' }}>
+                <form onSubmit={handlePayFee} className="flex flex-col sm:flex-row gap-3 items-start sm:items-end">
                   <div className="form-group" style={{ flex: 1, marginBottom: 0 }}>
                     <label className="form-label">Student</label>
                     <select className="form-control" value={selectedStudent} onChange={e => setSelectedStudent(e.target.value)} required>
@@ -362,13 +364,13 @@ export default function Events() {
                     <label className="form-label">Amount (₹)</label>
                     <input type="number" className="form-control" value={amountPaid} onChange={e => setAmountPaid(e.target.value)} required />
                   </div>
-                  <button type="submit" className="btn btn-primary" style={{ padding: '10px 16px' }}>
+                  <button type="submit" className="btn btn-primary w-full sm:w-auto px-4 py-2.5">
                     <CheckCircle size={16} /> Collect
                   </button>
                 </form>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px', marginBottom: '20px' }}>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
                 <div className="stat-card card-blue" style={{ padding: '16px' }}>
                   <div className="stat-label">Total Revenue</div>
                   <div className="stat-value" style={{ fontSize: '20px' }}>₹{totalRevenue}</div>
@@ -383,13 +385,14 @@ export default function Events() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
                 {/* Registrations List */}
                 <div className="table-card">
                   <div className="table-header">
                     <span className="card-title">Registrations ({eventFees.length})</span>
                   </div>
-                  <table className="data-table">
+                  <div className="overflow-x-auto">
+                  <table className="data-table min-w-[400px]">
                     <thead>
                       <tr>
                         <th>Student</th>
@@ -419,10 +422,11 @@ export default function Events() {
                         );
                       })}
                       {eventFees.length === 0 && (
-                        <tr><td colSpan="4" style={{ textAlign: 'center', color: 'var(--text3)' }}>No registrations.</td></tr>
+                        <tr><td colSpan="4" className="text-center text-text3 p-6">No registrations.</td></tr>
                       )}
                     </tbody>
                   </table>
+                  </div>
                 </div>
 
                 {/* Expenses Manager */}
@@ -430,14 +434,15 @@ export default function Events() {
                   <div className="table-header">
                     <span className="card-title">Event Expenses</span>
                   </div>
-                  <div style={{ padding: '12px', borderBottom: '1px solid var(--border)' }}>
-                    <form onSubmit={handleAddExpense} style={{ display: 'flex', gap: '8px' }}>
-                      <input type="text" className="form-control" placeholder="Description..." value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} required style={{ flex: 1 }} />
-                      <input type="number" className="form-control" placeholder="₹" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} required style={{ width: '80px' }} />
-                      <button type="submit" className="btn btn-primary"><Plus size={14} /></button>
+                  <div className="p-3 border-b border-border">
+                    <form onSubmit={handleAddExpense} className="flex gap-2">
+                      <input type="text" className="form-control flex-1" placeholder="Description..." value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} required />
+                      <input type="number" className="form-control w-[80px]" placeholder="₹" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} required />
+                      <button type="submit" className="btn btn-primary px-3"><Plus size={14} /></button>
                     </form>
                   </div>
-                  <table className="data-table">
+                  <div className="overflow-x-auto">
+                  <table className="data-table min-w-[300px]">
                     <thead>
                       <tr>
                         <th>Expense</th>
@@ -457,10 +462,11 @@ export default function Events() {
                         </tr>
                       ))}
                       {eventExpenses.length === 0 && (
-                        <tr><td colSpan="2" style={{ textAlign: 'center', color: 'var(--text3)' }}>No expenses logged.</td></tr>
+                        <tr><td colSpan="3" className="text-center text-text3 p-6">No expenses logged.</td></tr>
                       )}
                     </tbody>
                   </table>
+                  </div>
                 </div>
               </div>
             </>
@@ -475,13 +481,13 @@ export default function Events() {
       </div>
 
       {activeEvent && (
-        <div className="table-card" style={{ marginTop: '24px', borderTop: '3px solid var(--green)' }}>
-          <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="table-card mt-6 border-t-[3px] border-green">
+          <div className="table-header flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
             <div>
               <div className="card-title">Final Participant List</div>
               <div className="card-subtitle">Students who have fully cleared their participation fees.</div>
             </div>
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div className="flex flex-wrap gap-2 w-full lg:w-auto">
               <div className="search-box" style={{ width: '180px' }}>
                 <Search size={13} />
                 <input
@@ -517,15 +523,16 @@ export default function Events() {
                 ))}
               </select>
 
-              <button className="btn" onClick={exportFinalListPDF} style={{ background: 'rgba(240,75,75,0.1)', color: 'var(--red)', padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button className="btn bg-red/10 text-red px-3 py-1.5 text-xs flex items-center gap-1.5 w-full sm:w-auto justify-center" onClick={exportFinalListPDF}>
                 <FileText size={14} /> PDF
               </button>
-              <button className="btn" onClick={exportFinalListExcel} style={{ background: 'rgba(34,212,143,0.1)', color: 'var(--green)', padding: '6px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <button className="btn bg-green/10 text-green px-3 py-1.5 text-xs flex items-center gap-1.5 w-full sm:w-auto justify-center" onClick={exportFinalListExcel}>
                 <TableIcon size={14} /> Excel
               </button>
             </div>
           </div>
-          <table className="data-table">
+          <div className="overflow-x-auto">
+          <table className="data-table min-w-[600px]">
             <thead>
               <tr>
                 <th>Student Name</th>
@@ -546,10 +553,11 @@ export default function Events() {
                 </tr>
               ))}
               {filteredFinalList.length === 0 && (
-                <tr><td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--text3)' }}>No matching students found.</td></tr>
+                <tr><td colSpan="5" className="text-center text-text3 p-10">No matching students found.</td></tr>
               )}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </>

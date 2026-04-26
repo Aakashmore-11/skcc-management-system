@@ -102,13 +102,13 @@ export default function Classes() {
 
   return (
     <>
-      <div style={{ marginBottom: '20px' }}>
-        <div className="card-title" style={{ fontSize: '18px' }}>Classes & Batches</div>
+      <div className="mb-5">
+        <div className="card-title text-[18px]">Classes & Batches</div>
         <div className="card-subtitle">Configure academic classes and batch timings.</div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '20px' }}>
-        <div className="chart-card" style={{ alignSelf: 'start' }}>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="chart-card lg:col-span-1 self-start">
           <div className="card-title" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {isEditing ? <Edit3 size={16} color="var(--accent)" /> : <Library size={16} color="var(--accent)" />}
             {isEditing ? 'Edit Class Details' : 'Add New Class'}
@@ -163,12 +163,12 @@ export default function Classes() {
               <input type="number" className="form-control" placeholder="e.g. 5000" value={fees} onChange={e => setFees(e.target.value)} required />
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', marginTop: '8px' }}>
+            <button type="submit" className="btn btn-primary w-full mt-2">
               {isEditing ? <Edit3 size={16} /> : <Plus size={16} />} 
               {isEditing ? 'Update Class' : 'Create Class'}
             </button>
             {isEditing && (
-              <button type="button" className="btn btn-secondary" style={{ width: '100%', marginTop: '8px' }} onClick={() => { setIsEditing(null); setSelectedClass(''); setBatchName(''); setFees(''); }}>
+              <button type="button" className="btn bg-surface border border-border w-full mt-2" onClick={() => { setIsEditing(null); setSelectedClass(''); setBatchName(''); setFees(''); }}>
                 Cancel Edit
               </button>
             )}
@@ -176,9 +176,10 @@ export default function Classes() {
           </form>
         </div>
 
-        <div className="table-card" style={{ alignSelf: 'start' }}>
-          <table className="data-table">
-            <thead>
+        <div className="table-card lg:col-span-2 self-start">
+          <div className="overflow-x-auto">
+            <table className="data-table min-w-[500px]">
+              <thead>
               <tr>
                 <th>Class Name</th>
                 <th>Batch Timing</th>
@@ -213,6 +214,7 @@ export default function Classes() {
               )}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </>

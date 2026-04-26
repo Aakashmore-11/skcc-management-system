@@ -184,7 +184,7 @@ export default function Dashboard() {
     <>
 
       {/* Stat cards */}
-      <div className="stat-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         <StatCard
           label="Total Students"
           value={summary.totalStudents}
@@ -232,9 +232,9 @@ export default function Dashboard() {
       </div>
 
       {/* Charts row */}
-      <div className="charts-row">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
         {/* Area / Bar chart */}
-        <div className="chart-card">
+        <div className="chart-card lg:col-span-2">
           <div className="card-header">
             <div>
               <div className="card-title">Collection Trend</div>
@@ -338,7 +338,7 @@ export default function Dashboard() {
       </div>
 
       {/* Bottom row — table */}
-      <div className="bottom-row">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
         {/* Bar chart */}
         <div className="chart-card" style={{ animation: "fadeUp 0.4s ease 0.28s both" }}>
           <div className="card-header">
@@ -369,8 +369,9 @@ export default function Dashboard() {
               <div className="view-all">View all <ChevronRight size={13} /></div>
             </div>
           </div>
-          <table className="data-table">
-            <thead>
+          <div className="overflow-x-auto">
+            <table className="data-table min-w-[500px]">
+              <thead>
               <tr>
                 <th>Student</th>
                 <th>Class</th>
@@ -410,6 +411,7 @@ export default function Dashboard() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </>

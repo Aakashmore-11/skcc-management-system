@@ -200,22 +200,22 @@ export default function Fees() {
 
   return (
     <>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
         <div>
-          <div className="card-title" style={{ fontSize: '18px' }}>Fees & Receipts</div>
+          <div className="card-title text-[18px]">Fees & Receipts</div>
           <div className="card-subtitle">Record payments and generate official receipts.</div>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
+        <button className="btn btn-primary w-full sm:w-auto" onClick={() => setShowForm(!showForm)}>
           <Plus size={16} /> {showForm ? 'Cancel Transaction' : 'Record Payment'}
         </button>
       </div>
 
       {showForm && (
-        <div className="chart-card" style={{ marginBottom: '20px', maxWidth: '600px' }}>
-          <div className="card-title" style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div className="chart-card mb-5 max-w-[600px] w-full">
+          <div className="card-title mb-4 flex items-center gap-2">
             <Receipt size={16} color="var(--accent)" /> New Transaction
           </div>
-          <form onSubmit={handleRecordFee} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleRecordFee} className="flex flex-col gap-4">
             <div className="form-group">
               <label className="form-label">Select Student Account</label>
               <select className="form-control" value={formData.studentId} onChange={e => setFormData({ ...formData, studentId: e.target.value })} required>
@@ -237,7 +237,8 @@ export default function Fees() {
       )}
 
       <div className="table-card">
-        <table className="data-table">
+        <div className="overflow-x-auto">
+        <table className="data-table min-w-[500px]">
           <thead>
             <tr>
               <th>Receipt No.</th>
@@ -263,11 +264,12 @@ export default function Fees() {
             ))}
             {fees.length === 0 && (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--text3)' }}>No transactions found.</td>
+                <td colSpan="5" className="text-center p-10 text-text3">No transactions found.</td>
               </tr>
             )}
           </tbody>
         </table>
+        </div>
       </div>
     </>
   );

@@ -22,56 +22,54 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', position: 'relative', overflow: 'hidden' }}>
-      
-      {/* Decorative Background */}
-      <div style={{ position: 'absolute', top: '10%', left: '15%', width: '300px', height: '300px', background: 'radial-gradient(circle, rgba(79,124,255, 0.15) 0%, rgba(0, 0, 0, 0) 70%)', borderRadius: '50%', zIndex: 0 }}></div>
-      <div style={{ position: 'absolute', bottom: '10%', right: '15%', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(34,212,143, 0.1) 0%, rgba(0, 0, 0, 0) 70%)', borderRadius: '50%', zIndex: 0 }}></div>
+    <div className="min-h-screen flex items-center justify-center bg-bg relative overflow-hidden px-4">
 
-      <div className="chart-card" style={{ width: '100%', maxWidth: '400px', padding: '32px', position: 'relative', zIndex: 1 }}>
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <div className="logo-dot" style={{ width: 48, height: 48, margin: '0 auto 16px', fontSize: 20 }}>
-            S
-          </div>
-          <h2 className="card-title" style={{ fontSize: '20px', marginBottom: '4px' }}>SchoolPay Portal</h2>
-          <p className="card-subtitle">Sign in to administrative console</p>
+      {/* Decorative Background */}
+      <div className="absolute top-[10%] left-[15%] w-[300px] h-[300px] rounded-full z-0 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(79,124,255, 0.15) 0%, rgba(0, 0, 0, 0) 70%)' }}></div>
+      <div className="absolute bottom-[10%] right-[15%] w-[400px] h-[400px] rounded-full z-0 pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(34,212,143, 0.1) 0%, rgba(0, 0, 0, 0) 70%)' }}></div>
+
+      <div className="w-full max-w-[400px] bg-card border border-border rounded-[14px] p-6 sm:p-8 relative z-10 shadow-2xl">
+        <div className="text-center mb-8">
+          <img src="/logo.png" alt="SKCC Logo" className="w-20 h-20 mx-auto mb-4 rounded-full bg-white object-contain" />
+          <h2 className="text-[20px] font-semibold text-text1 mb-1">SKCC Management System</h2>
+          <p className="text-[12.5px] text-text2">Sign in to administrative console</p>
         </div>
-        
+
         {error && (
-          <div style={{ background: 'rgba(240,75,75,0.1)', border: '1px solid rgba(240,75,75,0.2)', padding: '12px', borderRadius: '8px', color: 'var(--red)', marginBottom: '20px', fontSize: '13px' }}>
+          <div className="bg-red/10 border border-red/20 text-red p-3 rounded-lg mb-5 text-[13px]">
             {error}
           </div>
         )}
-        
-        <form onSubmit={handleLogin}>
-          <div className="form-group">
-            <label className="form-label">Username</label>
-            <input 
-              type="text" 
-              className="form-control" 
+
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-[12px] font-medium text-text3 mb-1.5 uppercase tracking-wide">Username</label>
+            <input
+              type="text"
+              className="w-full px-3.5 py-2.5 bg-surface border border-border rounded-lg text-text1 text-[13px] outline-none focus:border-accent transition-colors"
               placeholder="Enter admin username"
-              value={username} 
+              value={username}
               onChange={(e) => setUsername(e.target.value)}
-              required 
+              required
             />
           </div>
-          <div className="form-group" style={{ marginBottom: '24px' }}>
-            <label className="form-label">Password</label>
-            <input 
-              type="password" 
-              className="form-control" 
+          <div className="mb-2">
+            <label className="block text-[12px] font-medium text-text3 mb-1.5 uppercase tracking-wide">Password</label>
+            <input
+              type="password"
+              className="w-full px-3.5 py-2.5 bg-surface border border-border rounded-lg text-text1 text-[13px] outline-none focus:border-accent transition-colors"
               placeholder="••••••••"
-              value={password} 
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required 
+              required
             />
           </div>
-          <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px', fontSize: '14px' }}>
-            <Lock size={14} /> Authenticate
+          <button type="submit" className="w-full flex items-center justify-center gap-2 bg-accent hover:bg-accent2 text-white py-3 rounded-lg text-[14px] font-medium transition-colors">
+            <Lock size={16} /> Authenticate
           </button>
         </form>
-        
-        <p style={{ textAlign: 'center', marginTop: '32px', fontSize: '11px', color: 'var(--text3)' }}>
+
+        <p className="text-center mt-8 text-[11px] text-text3 leading-relaxed">
           © 2026 Shekhar Kumar Coaching Classes.<br />All rights reserved.
         </p>
       </div>
