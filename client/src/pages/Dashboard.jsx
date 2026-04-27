@@ -159,7 +159,8 @@ export default function Dashboard() {
     monthlyData: [],
     donutData: [],
     classProgress: [],
-    recentPayments: []
+    recentPayments: [],
+    studentDistribution: []
   });
 
   const [chartTab, setChartTab] = useState("weekly");
@@ -286,23 +287,28 @@ export default function Dashboard() {
               <div className="card-subtitle">April 2026</div>
             </div>
           </div>
-          <div className="donut-wrap">
-            <PieChart width={130} height={130}>
-              <Pie
-                data={charts.donutData}
-                cx={60}
-                cy={60}
-                innerRadius={40}
-                outerRadius={60}
-                paddingAngle={3}
-                dataKey="value"
-              >
-                {charts.donutData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(v) => v + "%"} />
-            </PieChart>
+          <div className="donut-wrap" style={{ flexDirection: 'column', alignItems: 'center', gap: '0px' }}>
+            <ResponsiveContainer width="100%" height={100}>
+              <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                <Pie
+                  data={charts.donutData}
+                  cx="50%"
+                  cy="90%"
+                  startAngle={180}
+                  endAngle={0}
+                  innerRadius={60}
+                  outerRadius={85}
+                  paddingAngle={2}
+                  dataKey="value"
+                  stroke="none"
+                >
+                  {charts.donutData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(v) => v + "%"} />
+              </PieChart>
+            </ResponsiveContainer>
             <div className="legend">
               {charts.donutData.map((d) => (
                 <div className="legend-item" key={d.name}>
@@ -345,17 +351,51 @@ export default function Dashboard() {
         <div className="chart-card" style={{ animation: "fadeUp 0.4s ease 0.28s both" }}>
           <div className="card-header">
             <div>
-              <div className="card-title">Daily Collections</div>
-              <div className="card-subtitle">This week</div>
+              <div className="card-title">Student Classification</div>
+              <div className="card-subtitle">Enrollment by class level</div>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={160}>
-            <BarChart data={charts.weeklyData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }} barSize={22}>
+            <BarChart 
+              data={charts.studentDistribution} 
+              margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
+              barSize={30}
+            >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#555d74" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: "#555d74" }} axisLine={false} tickLine={false} tickFormatter={(v) => "₹" + v / 1000 + "K"} />
-              <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="amount" fill="#22d48f" radius={[4, 4, 0, 0]} opacity={0.85} />
+              <XAxis 
+                dataKey="className" 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 11, fill: "#555d74" }}
+              />
+              <YAxis 
+                axisLine={false} 
+                tickLine={false} 
+                tick={{ fontSize: 11, fill: "#555d74" }}
+              />
+              <Tooltip 
+                cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="custom-tooltip">
+                        <div className="tooltip-label">{payload[0].payload.className}</div>
+                        <div className="tooltip-value">{payload[0].value} Students</div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Bar 
+                dataKey="count" 
+                radius={[6, 6, 0, 0]}
+                label={{ position: 'top', fill: '#555d74', fontSize: 10, offset: 8 }}
+              >
+                {charts.studentDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} opacity={0.8} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

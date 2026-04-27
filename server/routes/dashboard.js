@@ -164,12 +164,25 @@ router.get('/charts', auth, async (req, res) => {
       };
     });
 
+    // 6. Student Distribution by Class
+    const studentDistribution = [];
+    for (let i = 0; i < classes.length; i++) {
+      const cls = classes[i];
+      const count = await Student.countDocuments({ assignedClass: cls._id });
+      studentDistribution.push({
+        className: cls.className,
+        count: count,
+        color: colors[i % colors.length]
+      });
+    }
+
     res.json({
       weeklyData,
       monthlyData,
       donutData,
       classProgress: classProgress.slice(0, 4), // Top 4
-      recentPayments
+      recentPayments,
+      studentDistribution
     });
   } catch(err) {
     res.status(500).json({ error: err.message });
