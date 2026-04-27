@@ -195,6 +195,13 @@ export default function Events() {
 
   const activeEvent = events.find(e => e._id === selectedEventId);
 
+  // Class model stores division inside className, e.g. "Class 10 (Div A)"
+  const parseDivision = (className) => {
+    if (!className) return 'N/A';
+    const match = className.match(/\(Div ([^)]+)\)/);
+    return match ? match[1] : 'N/A';
+  };
+
   const totalRevenue = eventFees.reduce((sum, f) => sum + f.amountPaid, 0);
   const totalExpense = eventExpenses.reduce((sum, e) => sum + e.amount, 0);
   const netProfit = totalRevenue - totalExpense;
@@ -224,7 +231,7 @@ export default function Events() {
     const tableData = filteredFinalList.map(s => [
       s.fullName,
       s.assignedClass?.className || 'N/A',
-      s.assignedClass?.division || 'N/A',
+      parseDivision(s.assignedClass?.className),
       s.contactNumber,
       'Paid'
     ]);
@@ -244,7 +251,7 @@ export default function Events() {
     const data = filteredFinalList.map(s => ({
       'Student Name': s.fullName,
       'Class': s.assignedClass?.className || 'N/A',
-      'Division': s.assignedClass?.division || 'N/A',
+      'Division': parseDivision(s.assignedClass?.className),
       'Mobile Number': s.contactNumber,
       'Status': 'Fully Paid'
     }));
@@ -262,7 +269,7 @@ export default function Events() {
     const search = finalListFilter.toLowerCase();
     const matchesSearch = s.fullName.toLowerCase().includes(search);
     const matchesClass = finalClassFilter === '' || s.assignedClass?.className === finalClassFilter;
-    const matchesDiv = finalDivFilter === '' || s.assignedClass?.division === finalDivFilter;
+    const matchesDiv = finalDivFilter === '' || parseDivision(s.assignedClass?.className) === finalDivFilter;
 
     return matchesSearch && matchesClass && matchesDiv;
   });
@@ -391,7 +398,7 @@ export default function Events() {
                   <div className="table-header">
                     <span className="card-title">Registrations ({eventFees.length})</span>
                   </div>
-                  <div className="overflow-x-auto">
+                  <div className="overflow-x-auto" style={{ maxHeight: '400px', overflowY: 'auto' }}>
                   <table className="data-table min-w-[400px]">
                     <thead>
                       <tr>
@@ -435,10 +442,12 @@ export default function Events() {
                     <span className="card-title">Event Expenses</span>
                   </div>
                   <div className="p-3 border-b border-border">
-                    <form onSubmit={handleAddExpense} className="flex gap-2">
-                      <input type="text" className="form-control flex-1" placeholder="Description..." value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} required />
-                      <input type="number" className="form-control w-[80px]" placeholder="₹" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} required />
-                      <button type="submit" className="btn btn-primary px-3"><Plus size={14} /></button>
+                    <form onSubmit={handleAddExpense} className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <input type="text" className="form-control" style={{ flex: 3 }} placeholder="Expense description (e.g. Catering, Venue...)" value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} required />
+                        <input type="number" className="form-control" style={{ flex: 1 }} placeholder="Amount" value={expenseAmount} onChange={e => setExpenseAmount(e.target.value)} required />
+                        <button type="submit" className="btn btn-primary px-4"><Plus size={14} /></button>
+                      </div>
                     </form>
                   </div>
                   <div className="overflow-x-auto">
@@ -518,7 +527,7 @@ export default function Events() {
                 onChange={e => setFinalDivFilter(e.target.value)}
               >
                 <option value="">All Div</option>
-                {[...new Set(students.map(s => s.assignedClass?.division).filter(Boolean))].sort().map(d => (
+                {[...new Set(students.map(s => parseDivision(s.assignedClass?.className)).filter(d => d !== 'N/A'))].sort().map(d => (
                   <option key={d} value={d}>Div {d}</option>
                 ))}
               </select>
@@ -547,7 +556,7 @@ export default function Events() {
                 <tr key={s._id}>
                   <td style={{ fontWeight: 600 }}>{s.fullName}</td>
                   <td>{s.assignedClass?.className || 'N/A'}</td>
-                  <td>{s.assignedClass?.division || 'N/A'}</td>
+                  <td>{parseDivision(s.assignedClass?.className)}</td>
                   <td style={{ color: 'var(--text2)' }}>{s.contactNumber}</td>
                   <td><span className="badge badge-green" style={{ background: 'rgba(34,212,143,0.1)' }}>Full Payment Received</span></td>
                 </tr>
