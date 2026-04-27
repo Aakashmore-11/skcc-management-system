@@ -180,7 +180,7 @@ export default function Dashboard() {
       .catch((err) => console.error(err));
   }, [location.search]);
 
-  const chartData = chartTab === "weekly" ? charts.weeklyData : charts.monthlyData;
+  const chartData = (chartTab === "weekly" ? charts.weeklyData : charts.monthlyData) || [];
   const chartKey = chartTab === "weekly" ? "day" : "month";
 
   return (
@@ -302,7 +302,7 @@ export default function Dashboard() {
                   dataKey="value"
                   stroke="none"
                 >
-                  {charts.donutData.map((entry, i) => (
+                  {charts.donutData?.map((entry, i) => (
                     <Cell key={i} fill={entry.color} />
                   ))}
                 </Pie>
@@ -310,7 +310,7 @@ export default function Dashboard() {
               </PieChart>
             </ResponsiveContainer>
             <div className="legend">
-              {charts.donutData.map((d) => (
+              {charts.donutData?.map((d) => (
                 <div className="legend-item" key={d.name}>
                   <div className="legend-left">
                     <div className="legend-dot" style={{ background: d.color }} />
@@ -326,7 +326,7 @@ export default function Dashboard() {
           <div style={{ marginTop: 20, borderTop: "1px solid var(--border)", paddingTop: 16 }}>
             <div style={{ fontSize: 12, color: "var(--text2)", marginBottom: 12 }}>Class-wise collection</div>
             <div className="progress-row">
-              {charts.classProgress.map((c) => (
+              {charts.classProgress?.map((c) => (
                 <div className="progress-item" key={c.name}>
                   <div className="progress-top">
                     <span className="progress-name">{c.name}</span>
@@ -392,7 +392,7 @@ export default function Dashboard() {
                 radius={[6, 6, 0, 0]}
                 label={{ position: 'top', fill: '#555d74', fontSize: 10, offset: 8 }}
               >
-                {charts.studentDistribution.map((entry, index) => (
+                {charts.studentDistribution?.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} opacity={0.8} />
                 ))}
               </Bar>
@@ -422,7 +422,7 @@ export default function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {charts.recentPayments.map((p) => (
+              {charts.recentPayments?.map((p) => (
                 <tr key={p.id}>
                   <td>
                     <div className="student-cell">
