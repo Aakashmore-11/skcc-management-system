@@ -199,8 +199,37 @@ export default function Students() {
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group mb-0"><label className="form-label">Full Name</label><input type="text" className="form-control" placeholder="Student's name" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} required /></div>
-            <div className="form-group mb-0"><label className="form-label">Contact Number</label><input type="text" className="form-control" placeholder="+91" value={formData.contactNumber} onChange={e => setFormData({...formData, contactNumber: e.target.value})} required /></div>
-            <div className="form-group mb-0"><label className="form-label">Parent Contact (Optional)</label><input type="text" className="form-control" placeholder="+91" value={formData.parentContact} onChange={e => setFormData({...formData, parentContact: e.target.value})} /></div>
+            <div className="form-group mb-0">
+              <label className="form-label">Contact Number</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="10-digit mobile" 
+                maxLength="10"
+                pattern="\d{10}"
+                value={formData.contactNumber} 
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setFormData({...formData, contactNumber: val});
+                }} 
+                required 
+              />
+            </div>
+            <div className="form-group mb-0">
+              <label className="form-label">Parent Contact (Optional)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                placeholder="10-digit mobile" 
+                maxLength="10"
+                pattern="\d{10}"
+                value={formData.parentContact} 
+                onChange={e => {
+                  const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setFormData({...formData, parentContact: val});
+                }} 
+              />
+            </div>
             <div className="form-group mb-0"><label className="form-label">Residential Address</label><input type="text" className="form-control" placeholder="Full address" value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} required /></div>
             <div className="form-group mb-0">
               <label className="form-label">Class & Batch Assignment</label>

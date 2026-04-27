@@ -19,6 +19,13 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   try {
     const { fullName, address, contactNumber, parentContact, assignedClass, totalFees } = req.body;
+
+    if (!/^\d{10}$/.test(contactNumber)) {
+      return res.status(400).json({ msg: 'Contact number must be exactly 10 digits.' });
+    }
+    if (parentContact && !/^\d{10}$/.test(parentContact)) {
+      return res.status(400).json({ msg: 'Parent contact must be exactly 10 digits.' });
+    }
     const newStudent = new Student({
       fullName, address, contactNumber, parentContact, assignedClass, totalFees, feesPending: totalFees
     });
@@ -40,6 +47,14 @@ router.put('/:id', auth, async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ msg: 'Student not found' });
+
+    const { contactNumber, parentContact } = req.body;
+    if (contactNumber && !/^\d{10}$/.test(contactNumber)) {
+      return res.status(400).json({ msg: 'Contact number must be exactly 10 digits.' });
+    }
+    if (parentContact && !/^\d{10}$/.test(parentContact)) {
+      return res.status(400).json({ msg: 'Parent contact must be exactly 10 digits.' });
+    }
     
     Object.assign(student, req.body);
     const updatedStudent = await student.save();

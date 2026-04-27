@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Settings as SettingsIcon, User, Lock, CheckCircle2, AlertCircle, Trash2, ShieldAlert, Key } from 'lucide-react';
 
@@ -13,6 +13,24 @@ export default function Settings() {
   const [resetConfirm, setResetConfirm] = useState('');
   const [masterPassword, setMasterPassword] = useState('');
   const [isResetting, setIsResetting] = useState(false);
+  
+  // OTP Verification State
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpInfo, setOtpInfo] = useState({ msg: '', emailSent: false });
+
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
+
+  const fetchAdminData = async () => {
+    try {
+      const res = await axios.get('/api/auth/me');
+      setFormData(prev => ({ ...prev, username: res.data.username || '' }));
+    } catch (err) {
+      console.error('Failed to fetch admin info');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,23 +40,41 @@ export default function Settings() {
       return setStatus({ type: 'error', msg: 'Passwords do not match!' });
     }
 
+    if (!formData.username && !formData.password) {
+      return setStatus({ type: 'error', msg: 'Please provide at least one change.' });
+    }
+
     setLoading(true);
     try {
-      const updateData = {};
+      const res = await axios.post('/api/auth/request-otp');
+      setOtpInfo({ msg: res.data.msg, emailSent: res.data.emailSent });
+      setShowOtpModal(true);
+      setStatus({ type: 'success', msg: res.data.msg });
+    } catch (err) {
+      console.error(err);
+      setStatus({ type: 'error', msg: err.response?.data?.msg || 'Failed to request OTP.' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyAndSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const updateData = { otp: otpCode };
       if (formData.username) updateData.username = formData.username;
       if (formData.password) updateData.password = formData.password;
-
-      if (Object.keys(updateData).length === 0) {
-        setLoading(false);
-        return setStatus({ type: 'error', msg: 'Please provide at least one change.' });
-      }
 
       await axios.put('/api/auth/update', updateData);
       setStatus({ type: 'success', msg: 'Credentials updated successfully!' });
       setFormData({ username: '', password: '', confirmPassword: '' });
+      setShowOtpModal(false);
+      setOtpCode('');
+      fetchAdminData();
     } catch (err) {
       console.error(err);
-      setStatus({ type: 'error', msg: err.response?.data?.msg || 'Failed to update credentials.' });
+      setStatus({ type: 'error', msg: err.response?.data?.msg || 'Verification failed.' });
     } finally {
       setLoading(false);
     }
@@ -204,6 +240,50 @@ export default function Settings() {
           Last system backup: Not configured • Version 1.0.5
         </p>
       </div>
+
+      {/* OTP Verification Modal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="chart-card w-full max-w-[400px] shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <div className="card-title flex items-center gap-2">
+                <ShieldAlert size={18} color="var(--accent)" /> Security Verification
+              </div>
+              <button onClick={() => setShowOtpModal(false)} className="text-text3 hover:text-text1">
+                <AlertCircle size={20} />
+              </button>
+            </div>
+
+            <p className="text-sm text-text3 mb-6 text-center">
+              {otpInfo.msg}. Enter the code below to authorize the changes.
+            </p>
+
+            <form onSubmit={handleVerifyAndSave} className="space-y-4">
+              <div className="form-group">
+                <label className="form-label">Enter 6-Digit Code</label>
+                <input
+                  type="text"
+                  maxLength="6"
+                  className="form-control text-center text-2xl font-mono tracking-[0.5em]"
+                  placeholder="000000"
+                  value={otpCode}
+                  onChange={e => setOtpCode(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <button type="submit" className="btn btn-primary w-full h-[46px]" disabled={loading}>
+                {loading ? 'Verifying...' : 'Verify & Save Changes'}
+              </button>
+              
+              <button type="button" onClick={() => setShowOtpModal(false)} className="w-full text-xs text-text3 hover:text-text1 py-2">
+                Cancel and return to form
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
