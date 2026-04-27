@@ -113,11 +113,20 @@ export default function Events() {
 
   const handlePayFee = async (e) => {
     e.preventDefault();
+    const student = students.find(s => s._id === selectedStudent);
+    const studentName = student ? student.fullName : 'Unknown Student';
+    const amount = Number(amountPaid);
+
+    const isConfirmed = window.confirm(
+      `Confirm Event Fee Collection?\n\nEvent: ${activeEvent?.eventName}\nStudent: ${studentName}\nAmount: ₹${amount.toLocaleString()}\n\nAre you sure you want to record this payment?`
+    );
+    if (!isConfirmed) return;
+
     try {
       await axios.post('/api/events/fees', {
         event: selectedEventId,
         student: selectedStudent,
-        amountPaid: Number(amountPaid)
+        amountPaid: amount
       });
       setSelectedStudent('');
       setAmountPaid('');
@@ -129,11 +138,18 @@ export default function Events() {
 
   const handleAddExpense = async (e) => {
     e.preventDefault();
+    const amount = Number(expenseAmount);
+
+    const isConfirmed = window.confirm(
+      `Confirm Expense Entry?\n\nEvent: ${activeEvent?.eventName}\nDescription: ${expenseDescription}\nAmount: ₹${amount.toLocaleString()}\n\nAre you sure you want to log this expense?`
+    );
+    if (!isConfirmed) return;
+
     try {
       await axios.post('/api/events/expenses', {
         event: selectedEventId,
         description: expenseDescription,
-        amount: Number(expenseAmount)
+        amount
       });
       setExpenseDescription('');
       setExpenseAmount('');
