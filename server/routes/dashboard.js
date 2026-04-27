@@ -41,10 +41,15 @@ router.get('/summary', auth, async (req, res) => {
     const monthlyRevenue = monthlyFees.length > 0 ? monthlyFees[0].total : 0;
     
     // Total pending and expected fees
-    const students = await Student.find();
-    const totalPendingFees = students.reduce((acc, curr) => acc + (curr.feesPending || 0), 0);
-    const totalExpectedFees = students.reduce((acc, curr) => acc + (curr.totalFees || 0), 0);
-    const pendingFeesCount = students.filter(s => (s.feesPending || 0) > 0).length;
+    const feeStats = await Student.aggregate([
+      { $group: {
+        _id: null,
+        totalPendingFees: { $sum: '$feesPending' },
+        totalExpectedFees: { $sum: '$totalFees' },
+        pendingFeesCount: { $sum: { $cond: [{ $gt: ['$feesPending', 0] }, 1, 0] } }
+      }}
+    ]);
+    const { totalPendingFees = 0, totalExpectedFees = 0, pendingFeesCount = 0 } = feeStats[0] || {};
     
     res.json({
       totalStudents,
@@ -67,76 +72,94 @@ router.get('/charts', auth, async (req, res) => {
       if (!isNaN(parsedDate)) targetDate = parsedDate;
     }
 
-    // 1. Weekly Data (Last 7 Days relative to targetDate)
+    // 1. Weekly Data (Last 7 Days)
     const weeklyData = [];
     for (let i = 6; i >= 0; i--) {
-      const date = new Date(targetDate);
-      date.setDate(date.getDate() - i);
-      date.setHours(0,0,0,0);
-      const nextDate = new Date(date);
-      nextDate.setDate(nextDate.getDate() + 1);
+      const d = new Date(targetDate);
+      d.setDate(d.getDate() - i);
+      d.setHours(0,0,0,0);
+      const nd = new Date(d);
+      nd.setDate(nd.getDate() + 1);
       
       const dayFees = await Fee.aggregate([
-        { $match: { paymentDate: { $gte: date, $lt: nextDate } } },
+        { $match: { paymentDate: { $gte: d, $lt: nd } } },
         { $group: { _id: null, total: { $sum: '$amountPaid' } } }
       ]);
-      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
-      weeklyData.push({ day: dayName, amount: dayFees.length > 0 ? dayFees[0].total : 0 });
-    }
-
-    // 2. Monthly Data (Last 4 Months relative to targetDate)
-    const monthlyData = [];
-    for (let i = 3; i >= 0; i--) {
-      const date = new Date(targetDate);
-      date.setMonth(date.getMonth() - i);
-      date.setDate(1);
-      date.setHours(0,0,0,0);
-      const nextMonth = new Date(date);
-      nextMonth.setMonth(nextMonth.getMonth() + 1);
-      
-      const monthFees = await Fee.aggregate([
-        { $match: { paymentDate: { $gte: date, $lt: nextMonth } } },
-        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-      ]);
-      const monthName = date.toLocaleDateString('en-US', { month: 'short' });
-      monthlyData.push({ month: monthName, amount: monthFees.length > 0 ? monthFees[0].total : 0 });
-    }
-
-    // 3. Collection Status (Donut Data based on Money)
-    const students = await Student.find();
-    let totalCollected = 0;
-    let totalPending = 0;
-    
-    students.forEach(s => {
-      totalCollected += (s.feesPaid || 0);
-      totalPending += (s.feesPending || 0);
-    });
-    
-    const totalPotential = totalCollected + totalPending || 1;
-    const donutData = [
-      { name: "Collected", value: Math.round((totalCollected / totalPotential) * 100) || 0, color: "#22d48f" },
-      { name: "Pending", value: Math.round((totalPending / totalPotential) * 100) || 0, color: "#f04b4b" },
-    ];
-
-    // 4. Class Progress
-    const classes = await Class.find();
-    const classProgress = [];
-    const colors = ["#4f7cff", "#22d48f", "#7c5cff", "#f5a623", "#f04b4b", "#22c7d4"];
-    
-    for (let i = 0; i < classes.length; i++) {
-      const cls = classes[i];
-      const clsStudents = await Student.find({ assignedClass: cls._id });
-      const clsTotal = clsStudents.reduce((acc, s) => acc + s.totalFees, 0);
-      const clsPaid = clsStudents.reduce((acc, s) => acc + s.feesPaid, 0);
-      
-      const pct = clsTotal > 0 ? Math.round((clsPaid / clsTotal) * 100) : 0;
-      
-      classProgress.push({
-        name: cls.className,
-        collected: pct,
-        color: colors[i % colors.length]
+      weeklyData.push({ 
+        day: d.toLocaleDateString('en-US', { weekday: 'short' }), 
+        amount: dayFees[0]?.total || 0 
       });
     }
+
+    // 2. Monthly Data (Last 4 Months)
+    const monthlyData = [];
+    for (let i = 3; i >= 0; i--) {
+      const d = new Date(targetDate);
+      d.setMonth(d.getMonth() - i);
+      d.setDate(1);
+      d.setHours(0,0,0,0);
+      const nm = new Date(d);
+      nm.setMonth(nm.getMonth() + 1);
+      
+      const monthFees = await Fee.aggregate([
+        { $match: { paymentDate: { $gte: d, $lt: nm } } },
+        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+      ]);
+      monthlyData.push({ 
+        month: d.toLocaleDateString('en-US', { month: 'short' }), 
+        amount: monthFees[0]?.total || 0 
+      });
+    }
+
+    // 3. Collection Status (Donut Data)
+    const moneyStats = await Student.aggregate([
+      { $group: { 
+        _id: null, 
+        totalCollected: { $sum: '$feesPaid' }, 
+        totalPending: { $sum: '$feesPending' } 
+      }}
+    ]);
+    const { totalCollected = 0, totalPending = 0 } = moneyStats[0] || {};
+    const totalPotential = totalCollected + totalPending || 1;
+    
+    const donutData = [
+      { name: "Collected", value: Math.round((totalCollected / totalPotential) * 100), color: "#22d48f" },
+      { name: "Pending", value: Math.round((totalPending / totalPotential) * 100), color: "#f04b4b" },
+    ];
+
+    // 4. Class Progress & 6. Student Distribution (Optimized)
+    const classes = await Class.find().lean();
+    const colors = ["#4f7cff", "#22d48f", "#7c5cff", "#f5a623", "#f04b4b", "#22c7d4"];
+    
+    // Get stats for all classes in one go
+    const classStats = await Student.aggregate([
+      { $group: {
+        _id: '$assignedClass',
+        studentCount: { $sum: 1 },
+        totalFees: { $sum: '$totalFees' },
+        feesPaid: { $sum: '$feesPaid' }
+      }}
+    ]);
+
+    const statsMap = {};
+    classStats.forEach(stat => {
+      statsMap[stat._id?.toString()] = stat;
+    });
+
+    const classProgress = [];
+    const studentDistribution = [];
+
+    classes.forEach((cls, i) => {
+      const stats = statsMap[cls._id.toString()] || { studentCount: 0, totalFees: 0, feesPaid: 0 };
+      const color = colors[i % colors.length];
+
+      // Progress
+      const pct = stats.totalFees > 0 ? Math.round((stats.feesPaid / stats.totalFees) * 100) : 0;
+      classProgress.push({ name: cls.className, collected: pct, color });
+
+      // Distribution
+      studentDistribution.push({ className: cls.className, count: stats.studentCount, color });
+    });
 
     // 5. Recent Payments
     const recentDocs = await Fee.find().sort({ paymentDate: -1 }).limit(5).populate({
@@ -146,41 +169,23 @@ router.get('/charts', auth, async (req, res) => {
     
     const recentPayments = recentDocs.map((f, i) => {
       const s = f.student;
-      const initials = s ? s.fullName.substring(0, 2).toUpperCase() : 'NA';
-      const className = s && s.assignedClass ? s.assignedClass.className : 'N/A';
-      
-      let status = 'Paid';
-      if (s && s.feesPending > 0) status = 'Partial';
-      
       return {
         id: f.receiptNumber,
-        name: s ? s.fullName : 'Unknown',
-        initials,
-        cls: className,
+        name: s?.fullName || 'Unknown',
+        initials: s?.fullName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'NA',
+        cls: s?.assignedClass?.className || 'N/A',
         amount: f.amountPaid,
         date: new Date(f.paymentDate).toLocaleDateString('en-US', { day: 'numeric', month: 'short' }),
-        status,
+        status: (s && s.feesPending > 0) ? 'Partial' : 'Paid',
         bg: colors[i % colors.length]
       };
     });
-
-    // 6. Student Distribution by Class
-    const studentDistribution = [];
-    for (let i = 0; i < classes.length; i++) {
-      const cls = classes[i];
-      const count = await Student.countDocuments({ assignedClass: cls._id });
-      studentDistribution.push({
-        className: cls.className,
-        count: count,
-        color: colors[i % colors.length]
-      });
-    }
 
     res.json({
       weeklyData,
       monthlyData,
       donutData,
-      classProgress: classProgress.slice(0, 4), // Top 4
+      classProgress: classProgress.slice(0, 4),
       recentPayments,
       studentDistribution
     });
