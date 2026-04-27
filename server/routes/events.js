@@ -57,7 +57,7 @@ router.get('/:eventId/fees', async (req, res) => {
       .populate({
         path: 'student',
         select: 'fullName contactNumber assignedClass',
-        populate: { path: 'assignedClass', select: 'className division' }
+        populate: { path: 'assignedClass', select: 'className batchName' }
       })
       .sort({ paymentDate: -1 });
     res.json(fees);

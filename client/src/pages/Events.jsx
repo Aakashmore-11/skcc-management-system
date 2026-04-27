@@ -154,42 +154,158 @@ export default function Events() {
     }
   };
 
-  const generateEventReceipt = (fee) => {
+  const generateEventReceipt = async (fee) => {
     const doc = new jsPDF();
-    doc.setFontSize(24);
-    doc.setTextColor(79, 124, 255);
-    doc.text('SKCC MANAGEMENT', 105, 25, null, null, 'center');
-    doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150);
-    doc.text('Official Event Fee Receipt', 105, 33, null, null, 'center');
-    doc.setLineWidth(0.5);
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, 40, 190, 40);
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(11);
-    doc.text(`Receipt No: ${fee.receiptNumber}`, 20, 55);
-    doc.text(`Date: ${new Date(fee.paymentDate).toLocaleDateString()}`, 140, 55);
-    doc.setFillColor(245, 245, 250);
-    doc.rect(20, 65, 170, 10, 'F');
-    doc.setFont(undefined, 'bold');
-    doc.text('EVENT & STUDENT DETAILS', 25, 72);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Event Name:`, 25, 85);
-    doc.text(`${activeEvent?.eventName}`, 70, 85);
-    doc.text(`Student Name:`, 25, 93);
-    doc.text(`${fee.student?.fullName}`, 70, 93);
-    doc.setFillColor(245, 245, 250);
-    doc.rect(20, 110, 170, 10, 'F');
-    doc.setFont(undefined, 'bold');
-    doc.text('PAYMENT DETAILS', 25, 117);
-    doc.setFont(undefined, 'normal');
-    doc.text(`Amount Paid:`, 25, 130);
-    doc.setFontSize(14);
-    doc.setTextColor(34, 212, 143);
-    doc.text(`INR ${fee.amountPaid.toLocaleString()}/-`, 70, 130);
-    doc.setTextColor(150, 150, 150);
-    doc.setFontSize(9);
-    doc.text('Thank you for your participation!', 105, 160, null, null, 'center');
+
+    // Try to load Logo for watermark
+    let img = null;
+    try {
+      img = new Image();
+      img.src = '/logo.png';
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+    } catch (e) {
+      img = null;
+    }
+
+    const drawReceipt = (offsetY, copyType) => {
+      // Outer Border
+      doc.setDrawColor(150, 150, 150);
+      doc.setLineWidth(0.5);
+      doc.rect(10, offsetY + 5, 190, 140);
+
+      // Header
+      doc.setFontSize(22);
+      doc.setTextColor(40, 40, 40);
+      doc.setFont(undefined, 'bold');
+      doc.text('Shekhar Kumar Coaching Classes', 105, offsetY + 16, null, null, 'center');
+
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      doc.setFont(undefined, 'normal');
+      doc.text('1,2,3 Mayur Society, Nilgiri, Limbayat, Surat.', 105, offsetY + 22, null, null, 'center');
+      doc.text('9601905488 | 8866238407', 105, offsetY + 27, null, null, 'center');
+
+      doc.setFontSize(11);
+      doc.setTextColor(120, 120, 120);
+      doc.setFont(undefined, 'bold');
+      doc.text(`Official Event Fee Receipt - ${copyType}`, 105, offsetY + 34, null, null, 'center');
+
+      doc.setLineWidth(0.5);
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, offsetY + 38, 195, offsetY + 38);
+
+      // Receipt & Date row
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.text(`Receipt No: `, 15, offsetY + 46);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${fee.receiptNumber}`, 35, offsetY + 46);
+
+      doc.setFont(undefined, 'normal');
+      doc.text(`Payment Date: `, 145, offsetY + 46);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${new Date(fee.paymentDate).toLocaleDateString('en-IN')}`, 168, offsetY + 46);
+
+      // Section: Student / Event Info
+      doc.setFillColor(245, 245, 250);
+      doc.rect(15, offsetY + 50, 180, 8, 'F');
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(50, 50, 50);
+      doc.text('EVENT & STUDENT INFORMATION', 20, offsetY + 55.5);
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+
+      // Left column
+      doc.text(`Student Name:`, 20, offsetY + 65);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${fee.student?.fullName || 'N/A'}`, 55, offsetY + 65);
+
+      doc.setFont(undefined, 'normal');
+      doc.text(`Mobile Number:`, 20, offsetY + 72);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${fee.student?.contactNumber || 'N/A'}`, 55, offsetY + 72);
+
+      // Right column
+      const fullClassName = fee.student?.assignedClass?.className || 'N/A';
+      const baseClass = fullClassName.split(' (Div')[0];
+      const division = fullClassName.match(/\((Div .*?)\)/)?.[1] || 'N/A';
+
+      doc.setFont(undefined, 'normal');
+      doc.text(`Class:`, 125, offsetY + 65);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${baseClass}`, 145, offsetY + 65);
+
+      doc.setFont(undefined, 'normal');
+      doc.text(`Division:`, 125, offsetY + 72);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${division}`, 145, offsetY + 72);
+
+      doc.setFont(undefined, 'normal');
+      doc.text(`Event Name:`, 125, offsetY + 79);
+      doc.setFont(undefined, 'bold');
+      doc.text(`${activeEvent?.eventName || 'N/A'}`, 152, offsetY + 79);
+
+      // Section: Payment Details
+      doc.setFillColor(245, 245, 250);
+      doc.rect(15, offsetY + 85, 180, 8, 'F');
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(50, 50, 50);
+      doc.text('PAYMENT DETAILS', 20, offsetY + 90.5);
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      doc.text(`Amount Paid:`, 20, offsetY + 102);
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(34, 180, 120);
+      doc.text(`INR ${fee.amountPaid.toLocaleString()}/-`, 50, offsetY + 102);
+
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Event Fee:`, 125, offsetY + 102);
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(79, 124, 255);
+      doc.text(`INR ${(activeEvent?.feeAmount || 0).toLocaleString()}/-`, 148, offsetY + 102);
+
+      doc.setLineWidth(0.5);
+      doc.setDrawColor(200, 200, 200);
+      doc.line(15, offsetY + 120, 195, offsetY + 120);
+
+      // Signature
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'bold');
+      doc.text('Authorized Signature / Stamp', 155, offsetY + 140, null, null, 'center');
+      doc.setLineWidth(0.5);
+      doc.setDrawColor(100, 100, 100);
+      doc.line(130, offsetY + 135, 180, offsetY + 135);
+
+      // Footer note
+      doc.setFontSize(8);
+      doc.setFont(undefined, 'italic');
+      doc.setTextColor(150, 150, 150);
+      doc.text('This is a computer generated receipt.', 105, offsetY + 140, null, null, 'center');
+
+      // Watermark
+      if (img) {
+        doc.setGState(new doc.GState({ opacity: 0.12 }));
+        doc.addImage(img, 'PNG', 55, offsetY + 28, 100, 100);
+        doc.setGState(new doc.GState({ opacity: 1 }));
+      }
+    };
+
+    drawReceipt(0, 'Student Copy');
     doc.save(`Event_Receipt_${fee.receiptNumber}.pdf`);
   };
 
