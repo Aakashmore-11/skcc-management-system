@@ -3,7 +3,8 @@ import { X } from 'lucide-react';
 import Cookies from 'js-cookie';
 
 const NAV_ITEMS = [
-  { icon: "✓", label: "Attendance", path: "/attendance" },
+  { icon: "✓", label: "Mark Attendance", path: "/attendance" },
+  { icon: "📊", label: "Monitor & Reports", path: "/monitor" },
 ];
 
 export default function Sidebar({ closeSidebar }) {

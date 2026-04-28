@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Attendance from './pages/Attendance';
+import AttendanceMonitor from './pages/AttendanceMonitor';
 import Cookies from 'js-cookie';
 
 const ProtectedRoute = ({ children }) => {
@@ -18,6 +19,7 @@ function App() {
         <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
           <Route index element={<Navigate to="/attendance" />} />
           <Route path="attendance" element={<Attendance />} />
+          <Route path="monitor" element={<AttendanceMonitor />} />
         </Route>
       </Routes>
     </Router>
