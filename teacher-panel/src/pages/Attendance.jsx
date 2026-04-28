@@ -259,14 +259,11 @@ export default function Attendance() {
 
             <div className="flex flex-col gap-4 mb-4 pb-4 border-b border-border">
               {/* Actions Row */}
-              <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
-                <div className="flex flex-wrap gap-2">
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                   <button className="btn flex-1 sm:flex-none text-[12px] !py-1.5 !px-3" onClick={() => markAll('Present')} style={{ background: 'rgba(34, 212, 143, 0.1)', color: 'var(--green)' }}>Mark All Present</button>
                   <button className="btn flex-1 sm:flex-none text-[12px] !py-1.5 !px-3" onClick={() => markAll('Absent')} style={{ background: 'rgba(255, 71, 87, 0.1)', color: 'var(--red)' }}>Mark All Absent</button>
                 </div>
-                <button className="btn btn-primary h-[40px] w-full sm:w-auto px-8" onClick={handleSave} disabled={loading}>
-                  <Save size={16} /> Save Attendance
-                </button>
               </div>
 
               {/* Search Row */}
@@ -287,86 +284,103 @@ export default function Attendance() {
             {loading ? (
               <div className="text-center p-10 text-text3">Loading students...</div>
             ) : students.length > 0 ? (
-            <div className="mt-2 border border-border rounded-lg overflow-hidden">
-              <div className="hidden sm:grid grid-cols-[1fr,300px] px-4 py-3 bg-surface border-b border-border text-[11px] font-bold uppercase tracking-wider text-text3">
-                <div>Student Name</div>
-                <div className="text-center">Attendance Status</div>
-              </div>
-
-              <div className="divide-y divide-border/50">
-                {students.filter(student => student.fullName.toLowerCase().includes(searchQuery.toLowerCase())).map(student => (
-                  <div key={student.studentId} className="grid grid-cols-[1fr,auto] sm:grid-cols-[1fr,300px] items-center px-4 py-3 hover:bg-surface/50 transition-colors gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="avatar-sm !w-8 !h-8 shrink-0" style={{ background: 'var(--accent2)' }}>
-                        {student.fullName.substring(0, 2).toUpperCase()}
-                      </div>
-                      <div className="font-medium text-text1 text-[14px] truncate leading-none">{student.fullName}</div>
-                    </div>
-
-                    {/* Desktop View: Original Radio Buttons */}
-                    <div className="hidden sm:flex items-center justify-center gap-6">
-                      <label className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                          type="radio"
-                          name={`status-${student.studentId}`}
-                          checked={attendanceData[student.studentId] === 'Present'}
-                          onChange={() => handleStatusChange(student.studentId, 'Present')}
-                          className="accent-green w-4 h-4"
-                        />
-                        <span className={`text-[13px] ${attendanceData[student.studentId] === 'Present' ? 'text-green font-medium' : 'text-text2'}`}>Present</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                          type="radio"
-                          name={`status-${student.studentId}`}
-                          checked={attendanceData[student.studentId] === 'Absent'}
-                          onChange={() => handleStatusChange(student.studentId, 'Absent')}
-                          className="accent-red w-4 h-4"
-                        />
-                        <span className={`text-[13px] ${attendanceData[student.studentId] === 'Absent' ? 'text-red font-medium' : 'text-text2'}`}>Absent</span>
-                      </label>
-                      <label className="flex items-center gap-2 cursor-pointer group">
-                        <input
-                          type="radio"
-                          name={`status-${student.studentId}`}
-                          checked={attendanceData[student.studentId] === 'Late'}
-                          onChange={() => handleStatusChange(student.studentId, 'Late')}
-                          className="accent-amber w-4 h-4"
-                        />
-                        <span className={`text-[13px] ${attendanceData[student.studentId] === 'Late' ? 'text-amber font-medium' : 'text-text2'}`}>Late</span>
-                      </label>
-                    </div>
-
-                    {/* Mobile View: One Button Cycling (P/A Only) */}
-                    <div className="flex sm:hidden items-center justify-end">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const current = attendanceData[student.studentId];
-                          const next = current === 'Present' ? 'Absent' : 'Present';
-                          handleStatusChange(student.studentId, next);
-                        }}
-                        className={`w-12 h-10 rounded-lg flex items-center justify-center font-bold text-[15px] transition-all duration-200 shadow-sm ${
-                          attendanceData[student.studentId] === 'Present' ? 'bg-green text-white' :
-                          attendanceData[student.studentId] === 'Absent' ? 'bg-red text-white' :
-                          'bg-surface border border-border text-text3'
-                        }`}
-                      >
-                        {attendanceData[student.studentId] === 'Present' ? 'P' :
-                         attendanceData[student.studentId] === 'Absent' ? 'A' : '?'}
-                      </button>
-                    </div>
+              <>
+                <div className="mt-2 border border-border rounded-lg overflow-hidden">
+                  <div className="hidden sm:grid grid-cols-[1fr,300px] px-4 py-3 bg-surface border-b border-border text-[11px] font-bold uppercase tracking-wider text-text3">
+                    <div>Student Name</div>
+                    <div className="text-center">Attendance Status</div>
                   </div>
-                ))}
-              </div>
 
-              {students.filter(student => student.fullName.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
-                <div className="p-10 text-center text-text3">No students found in this class.</div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center p-10 text-text3">No students found in this class.</div>
-          )}
+                  <div className="divide-y divide-border/50">
+                    {students.filter(student => student.fullName.toLowerCase().includes(searchQuery.toLowerCase())).map(student => (
+                      <div key={student.studentId} className="grid grid-cols-[1fr,auto] sm:grid-cols-[1fr,300px] items-center px-4 py-3 hover:bg-surface/50 transition-colors gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="avatar-sm !w-8 !h-8 shrink-0" style={{ background: 'var(--accent2)' }}>
+                            {student.fullName.substring(0, 2).toUpperCase()}
+                          </div>
+                          <div className="font-medium text-text1 text-[14px] truncate leading-none">{student.fullName}</div>
+                        </div>
+
+                        {/* Desktop View: Original Radio Buttons */}
+                        <div className="hidden sm:flex items-center justify-center gap-6">
+                          <label className="flex items-center gap-2 cursor-pointer group">
+                            <input
+                              type="radio"
+                              name={`status-${student.studentId}`}
+                              checked={attendanceData[student.studentId] === 'Present'}
+                              onChange={() => handleStatusChange(student.studentId, 'Present')}
+                              className="accent-green w-4 h-4"
+                            />
+                            <span className={`text-[13px] ${attendanceData[student.studentId] === 'Present' ? 'text-green font-medium' : 'text-text2'}`}>Present</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer group">
+                            <input
+                              type="radio"
+                              name={`status-${student.studentId}`}
+                              checked={attendanceData[student.studentId] === 'Absent'}
+                              onChange={() => handleStatusChange(student.studentId, 'Absent')}
+                              className="accent-red w-4 h-4"
+                            />
+                            <span className={`text-[13px] ${attendanceData[student.studentId] === 'Absent' ? 'text-red font-medium' : 'text-text2'}`}>Absent</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer group">
+                            <input
+                              type="radio"
+                              name={`status-${student.studentId}`}
+                              checked={attendanceData[student.studentId] === 'Late'}
+                              onChange={() => handleStatusChange(student.studentId, 'Late')}
+                              className="accent-amber w-4 h-4"
+                            />
+                            <span className={`text-[13px] ${attendanceData[student.studentId] === 'Late' ? 'text-amber font-medium' : 'text-text2'}`}>Late</span>
+                          </label>
+                        </div>
+
+                        {/* Mobile View: One Button Cycling (P/A Only) */}
+                        <div className="flex sm:hidden items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const current = attendanceData[student.studentId];
+                              const next = current === 'Present' ? 'Absent' : 'Present';
+                              handleStatusChange(student.studentId, next);
+                            }}
+                            className={`w-12 h-10 rounded-lg flex items-center justify-center font-bold text-[15px] transition-all duration-200 shadow-sm ${
+                              attendanceData[student.studentId] === 'Present' ? 'bg-green text-white' :
+                              attendanceData[student.studentId] === 'Absent' ? 'bg-red text-white' :
+                              'bg-surface border border-border text-text3'
+                            }`}
+                          >
+                            {attendanceData[student.studentId] === 'Present' ? 'P' :
+                             attendanceData[student.studentId] === 'Absent' ? 'A' : '?'}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {students.filter(student => student.fullName.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                    <div className="p-10 text-center text-text3">No students found in this class.</div>
+                  )}
+                </div>
+
+                {/* Final Save Button at Bottom */}
+                <div className="mt-6 flex justify-center sm:justify-end pb-4">
+                  <button 
+                    className="btn btn-primary h-[48px] w-full sm:w-auto px-12 text-[15px] shadow-lg shadow-accent/20" 
+                    onClick={handleSave} 
+                    disabled={loading}
+                  >
+                    {loading ? 'Saving...' : (
+                      <>
+                        <Save size={18} /> Complete & Save Attendance
+                      </>
+                    )}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div className="text-center p-10 text-text3">No students found in this class.</div>
+            )}
         </>
       )}
       </div>

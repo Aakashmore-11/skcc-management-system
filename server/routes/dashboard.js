@@ -10,17 +10,18 @@ router.get('/summary', auth, async (req, res) => {
   try {
     let targetDate = new Date();
     if (req.query.date) {
-      const parsedDate = new Date(req.query.date);
-      if (!isNaN(parsedDate)) targetDate = parsedDate;
+      const [y, m, d] = req.query.date.split('-').map(Number);
+      targetDate = new Date(Date.UTC(y, m - 1, d));
+    } else {
+      targetDate.setUTCHours(0, 0, 0, 0);
     }
 
     const totalStudents = await Student.countDocuments();
     
     // Today's collection
     const startOfDay = new Date(targetDate);
-    startOfDay.setHours(0,0,0,0);
-    const endOfDay = new Date(startOfDay);
-    endOfDay.setDate(endOfDay.getDate() + 1);
+    const endOfDay = new Date(targetDate);
+    endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 
     const todaysFees = await Fee.aggregate([
       { $match: { paymentDate: { $gte: startOfDay, $lt: endOfDay } } },
@@ -85,10 +86,9 @@ router.get('/charts', auth, async (req, res) => {
     const weeklyData = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(targetDate);
-      d.setDate(d.getDate() - i);
-      d.setHours(0,0,0,0);
+      d.setUTCDate(d.getUTCDate() - i);
       const nd = new Date(d);
-      nd.setDate(nd.getDate() + 1);
+      nd.setUTCDate(nd.getUTCDate() + 1);
       
       const dayFees = await Fee.aggregate([
         { $match: { paymentDate: { $gte: d, $lt: nd } } },

@@ -36,13 +36,18 @@ export default function Topbar({ toggleSidebar }) {
       </div>
       
       <div className="flex items-center justify-between w-full md:w-auto gap-3">
-        <div className="flex items-center bg-card border border-border rounded-lg overflow-hidden hover:border-border2 transition-colors">
-          <Calendar size={13} className="ml-3 text-text2" />
+        <div className="relative group">
+          <div className="flex items-center justify-between bg-card border border-border rounded-lg px-3 py-1.5 min-w-[140px] group-hover:border-border2 transition-all cursor-pointer">
+            <span className="text-[12.5px] font-bold text-text1 mr-2">
+              {date.split('-').reverse().join('-')}
+            </span>
+            <Calendar size={13} className="text-text2 group-hover:text-accent transition-colors" />
+          </div>
           <input 
             type="date" 
             value={date}
             onChange={handleDateChange}
-            className="bg-transparent border-none text-text2 outline-none py-1.5 px-3 text-[12.5px] cursor-pointer font-sans w-[130px]"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           />
         </div>
         <button className="relative flex items-center justify-center w-9 h-9 rounded-lg bg-card border border-border text-text2 hover:text-text1 hover:border-border2 transition-colors">

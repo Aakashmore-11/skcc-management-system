@@ -15,8 +15,8 @@ router.get('/class/:classId', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Date is required' });
     }
 
-    const searchDate = new Date(date);
-    searchDate.setHours(0, 0, 0, 0);
+    const [year, month, day] = date.split('-').map(Number);
+    const searchDate = new Date(Date.UTC(year, month - 1, day));
     
     // Get all students in the class
     const students = await Student.find({ assignedClass: classId }).sort({ fullName: 1 });
@@ -61,8 +61,8 @@ router.post('/mark', auth, async (req, res) => {
       return res.status(400).json({ msg: 'Please provide all required fields' });
     }
 
-    const attendanceDate = new Date(date);
-    attendanceDate.setHours(0, 0, 0, 0);
+    const [year, month, day] = date.split('-').map(Number);
+    const attendanceDate = new Date(Date.UTC(year, month - 1, day));
 
     const operations = attendanceData.map(record => {
       if (record.status) {
@@ -103,13 +103,18 @@ router.post('/mark', auth, async (req, res) => {
 // GET overall attendance statistics
 router.get('/stats', auth, async (req, res) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    let targetDate = new Date();
+    if (req.query.date) {
+      const [year, month, day] = req.query.date.split('-').map(Number);
+      targetDate = new Date(Date.UTC(year, month - 1, day));
+    } else {
+      targetDate.setUTCHours(0, 0, 0, 0);
+    }
 
     const totalStudents = await Student.countDocuments();
-    const presentToday = await Attendance.countDocuments({ date: today, status: 'Present' });
-    const absentToday = await Attendance.countDocuments({ date: today, status: 'Absent' });
-    const lateToday = await Attendance.countDocuments({ date: today, status: 'Late' });
+    const presentToday = await Attendance.countDocuments({ date: targetDate, status: 'Present' });
+    const absentToday = await Attendance.countDocuments({ date: targetDate, status: 'Absent' });
+    const lateToday = await Attendance.countDocuments({ date: targetDate, status: 'Late' });
 
     res.json({
       totalStudents,
