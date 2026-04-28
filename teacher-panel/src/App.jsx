@@ -3,23 +3,6 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Attendance from './pages/Attendance';
 import Cookies from 'js-cookie';
-import axios from 'axios';
-
-// Global axios configuration for authentication
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-axios.interceptors.request.use(
-  (config) => {
-    const token = Cookies.get('teacher_token');
-    if (token) {
-      config.headers['x-auth-token'] = token;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
 
 const ProtectedRoute = ({ children }) => {
   const token = Cookies.get('teacher_token');

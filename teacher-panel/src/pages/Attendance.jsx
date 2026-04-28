@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios from '../api/axios';
 import { Calendar, Users, CheckCircle, XCircle, Clock, Save, FileDown, FileSpreadsheet, Search as SearchIcon } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
