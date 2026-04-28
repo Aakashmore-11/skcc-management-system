@@ -4,6 +4,7 @@ const Admin = require('../models/Admin');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const auth = require('../middleware/auth');
+const AuditLog = require('../models/AuditLog');
 const { sendOTP } = require('../utils/mailer');
 const crypto = require('crypto');
 
@@ -21,8 +22,14 @@ router.post('/login', async (req, res) => {
     if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
 
     const payload = { admin: { id: admin.id } };
-    jwt.sign(payload, process.env.JWT_SECRET || 'secretToken', { expiresIn: 360000 }, (err, token) => {
+    jwt.sign(payload, process.env.JWT_SECRET || 'secretToken', { expiresIn: 360000 }, async (err, token) => {
       if (err) throw err;
+      
+      // Log login
+      try {
+        await AuditLog.create({ adminId: admin.id, action: 'ADMIN_LOGIN', details: `Admin logged in from IP: ${req.ip || 'Unknown'}` });
+      } catch(e) { console.error(e) }
+
       res.json({ token });
     });
   } catch (err) {

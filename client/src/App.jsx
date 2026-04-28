@@ -5,7 +5,10 @@ import Login from './pages/Login';
 import Students from './pages/Students';
 import Fees from './pages/Fees';
 import Classes from './pages/Classes';
+import AttendanceReports from './pages/AttendanceReports';
+import Teachers from './pages/Teachers';
 import Events from './pages/Events';
+import AuditLogs from './pages/AuditLogs';
 import Reports from './pages/Reports';
 import Schedule from './pages/Schedule';
 import Settings from './pages/Settings';
@@ -42,7 +45,10 @@ function App() {
           <Route path="students" element={<Students />} />
           <Route path="fees" element={<Fees />} />
           <Route path="classes" element={<Classes />} />
+          <Route path="attendance-reports" element={<AttendanceReports />} />
+          <Route path="teachers" element={<Teachers />} />
           <Route path="events" element={<Events />} />
+          <Route path="audit-logs" element={<AuditLogs />} />
           <Route path="reports" element={<Reports />} />
           <Route path="schedule" element={<Schedule />} />
           <Route path="settings" element={<Settings />} />

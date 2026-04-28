@@ -6,8 +6,11 @@ const NAV_ITEMS = [
   { icon: "⊞", label: "Dashboard", path: "/" },
   { icon: "◎", label: "Students", path: "/students" },
   { icon: "⊡", label: "Classes & Batches", path: "/classes" },
+  { icon: "✓", label: "Attendance Reports", path: "/attendance-reports" },
+  { icon: "🛡", label: "Teachers", path: "/teachers" },
   { icon: "₹", label: "Fees", path: "/fees" },
   { icon: "✧", label: "Events", path: "/events" },
+  { icon: "⌕", label: "Audit Logs", path: "/audit-logs" },
 ];
 
 export default function Sidebar({ closeSidebar }) {

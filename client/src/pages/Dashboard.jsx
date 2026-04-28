@@ -12,6 +12,7 @@ import {
   Search,
   ChevronRight,
   Calendar,
+  UserCheck
 } from "lucide-react";
 import {
   AreaChart,
@@ -152,6 +153,9 @@ export default function Dashboard() {
     totalPendingFees: 0,
     totalExpectedFees: 0,
     pendingFeesCount: 0,
+    presentToday: 0,
+    absentToday: 0,
+    lateToday: 0,
   });
 
   const [charts, setCharts] = useState({
@@ -187,7 +191,7 @@ export default function Dashboard() {
     <>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-5">
         <StatCard
           label="Total Students"
           value={summary.totalStudents}
@@ -231,6 +235,17 @@ export default function Dashboard() {
           change={`${summary.pendingFeesCount} students`}
           changeType="down"
           period="with unpaid fees"
+        />
+        <StatCard
+          label="Attendance Today"
+          value={summary.presentToday + summary.lateToday}
+          icon={UserCheck}
+          colorClass="card-purple"
+          iconBg="rgba(124,92,255,0.15)"
+          iconColor="#7c5cff"
+          change={`${summary.absentToday} absent`}
+          changeType="down"
+          period="out of total"
         />
       </div>
 

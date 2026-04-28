@@ -3,6 +3,7 @@ const router = express.Router();
 const Student = require('../models/Student');
 const Fee = require('../models/Fee');
 const Class = require('../models/Class');
+const Attendance = require('../models/Attendance');
 const auth = require('../middleware/auth');
 
 router.get('/summary', auth, async (req, res) => {
@@ -51,13 +52,21 @@ router.get('/summary', auth, async (req, res) => {
     ]);
     const { totalPendingFees = 0, totalExpectedFees = 0, pendingFeesCount = 0 } = feeStats[0] || {};
     
+    // Attendance Stats
+    const presentToday = await Attendance.countDocuments({ date: startOfDay, status: 'Present' });
+    const absentToday = await Attendance.countDocuments({ date: startOfDay, status: 'Absent' });
+    const lateToday = await Attendance.countDocuments({ date: startOfDay, status: 'Late' });
+    
     res.json({
       totalStudents,
       todaysCollection,
       monthlyRevenue,
       totalPendingFees,
       totalExpectedFees,
-      pendingFeesCount
+      pendingFeesCount,
+      presentToday,
+      absentToday,
+      lateToday
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
