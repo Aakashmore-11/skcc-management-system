@@ -5,10 +5,18 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
+const getLocalDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function Attendance() {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [selectedDate, setSelectedDate] = useState(getLocalDate());
 
   const [students, setStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState({}); // { studentId: status }
