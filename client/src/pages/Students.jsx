@@ -129,7 +129,7 @@ export default function Students() {
       s.assignedClass?.className || 'N/A',
       s.assignedClass?.batchName || 'N/A',
       `₹${s.totalFees.toLocaleString()}`,
-      `₹${s.feesPending.toLocaleString()}`
+      s.feesPending === 0 ? 'NIL' : `₹${s.feesPending.toLocaleString()}`
     ]);
 
     autoTable(doc, {

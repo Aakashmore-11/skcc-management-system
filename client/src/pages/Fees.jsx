@@ -192,7 +192,8 @@ export default function Fees() {
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
       doc.setTextColor(220, 80, 80);
-      doc.text(`INR ${(fee.remainingBalance || 0).toLocaleString()}/-`, 150, offsetY + 107);
+      const dueDisplay = (fee.remainingBalance || 0) === 0 ? 'NIL' : `INR ${(fee.remainingBalance || 0).toLocaleString()}/-`;
+      doc.text(dueDisplay, 150, offsetY + 107);
 
       doc.setLineWidth(0.5);
       doc.setDrawColor(200, 200, 200);
@@ -253,7 +254,7 @@ export default function Fees() {
                 <option value="">-- Choose Student --</option>
                 {students.map(s => (
                   <option key={s._id} value={s._id}>
-                    {s.fullName} • (Pending Due: ₹{s.feesPending.toLocaleString()})
+                    {s.fullName} • (Pending Due: {s.feesPending === 0 ? 'NIL' : `₹${s.feesPending.toLocaleString()}`})
                   </option>
                 ))}
               </select>

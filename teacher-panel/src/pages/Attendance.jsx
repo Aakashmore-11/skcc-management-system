@@ -16,7 +16,7 @@ const getLocalDate = () => {
 export default function Attendance() {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
-  const [selectedDate, setSelectedDate] = useState(getLocalDate());
+  const [selectedDate, setSelectedDate] = useState(() => getLocalDate());
 
   const [students, setStudents] = useState([]);
   const [attendanceData, setAttendanceData] = useState({}); // { studentId: status }
@@ -160,20 +160,20 @@ export default function Attendance() {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
-        <div>
-          <div className="card-title text-[18px]">Attendance Management</div>
-          <div className="card-subtitle">Track and manage student daily attendance.</div>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+        <div className="text-center sm:text-left">
+          <div className="card-title text-[20px] sm:text-[22px]">Attendance Management</div>
+          <div className="card-subtitle mt-1">Track and manage student daily attendance.</div>
         </div>
-        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-          <button className="btn" onClick={exportToPDF} style={{ background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)' }}>
-            <FileDown size={16} /> PDF
+        <div className="flex gap-2">
+          <button className="btn !py-2 !px-4" onClick={exportToPDF} style={{ background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)' }}>
+            <FileDown size={16} /> <span className="hidden sm:inline">Export PDF</span><span className="sm:hidden">PDF</span>
           </button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <div className="stat-card" style={{ background: 'rgba(79, 124, 255, 0.05)', border: '1px solid rgba(79, 124, 255, 0.1)' }}>
           <div className="stat-top">
             <div className="stat-label">Total Students</div>
@@ -287,71 +287,88 @@ export default function Attendance() {
             {loading ? (
               <div className="text-center p-10 text-text3">Loading students...</div>
             ) : students.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th>Student Name</th>
-                      <th className="w-[400px]" style={{ textAlign: 'center' }}>Attendance Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {students.filter(student => student.fullName.toLowerCase().includes(searchQuery.toLowerCase())).map(student => (
-                      <tr key={student.studentId}>
-                        <td className="align-middle">
-                          <div className="student-cell">
-                            <div className="avatar-sm" style={{ background: 'var(--accent2)' }}>
-                              {student.fullName.substring(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="student-name">{student.fullName}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="align-middle">
-                          <div className="flex justify-center items-center gap-6">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                name={`status-${student.studentId}`}
-                                checked={attendanceData[student.studentId] === 'Present'}
-                                onChange={() => handleStatusChange(student.studentId, 'Present')}
-                                className="accent-green w-4 h-4"
-                              />
-                              <span className={`text-[13px] ${attendanceData[student.studentId] === 'Present' ? 'text-green font-medium' : 'text-text2'}`}>Present</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                name={`status-${student.studentId}`}
-                                checked={attendanceData[student.studentId] === 'Absent'}
-                                onChange={() => handleStatusChange(student.studentId, 'Absent')}
-                                className="accent-red w-4 h-4"
-                              />
-                              <span className={`text-[13px] ${attendanceData[student.studentId] === 'Absent' ? 'text-red font-medium' : 'text-text2'}`}>Absent</span>
-                            </label>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input
-                                type="radio"
-                                name={`status-${student.studentId}`}
-                                checked={attendanceData[student.studentId] === 'Late'}
-                                onChange={() => handleStatusChange(student.studentId, 'Late')}
-                                className="accent-amber w-4 h-4"
-                              />
-                              <span className={`text-[13px] ${attendanceData[student.studentId] === 'Late' ? 'text-amber font-medium' : 'text-text2'}`}>Late</span>
-                            </label>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <div className="mt-2 border border-border rounded-lg overflow-hidden">
+              <div className="hidden sm:grid grid-cols-[1fr,300px] px-4 py-3 bg-surface border-b border-border text-[11px] font-bold uppercase tracking-wider text-text3">
+                <div>Student Name</div>
+                <div className="text-center">Attendance Status</div>
               </div>
-            ) : (
-              <div className="text-center p-10 text-text3">No students found in this class.</div>
-            )}
-          </>
-        )}
+
+              <div className="divide-y divide-border/50">
+                {students.filter(student => student.fullName.toLowerCase().includes(searchQuery.toLowerCase())).map(student => (
+                  <div key={student.studentId} className="grid grid-cols-[1fr,auto] sm:grid-cols-[1fr,300px] items-center px-4 py-3 hover:bg-surface/50 transition-colors gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="avatar-sm !w-8 !h-8 shrink-0" style={{ background: 'var(--accent2)' }}>
+                        {student.fullName.substring(0, 2).toUpperCase()}
+                      </div>
+                      <div className="font-medium text-text1 text-[14px] truncate leading-none">{student.fullName}</div>
+                    </div>
+
+                    {/* Desktop View: Original Radio Buttons */}
+                    <div className="hidden sm:flex items-center justify-center gap-6">
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={`status-${student.studentId}`}
+                          checked={attendanceData[student.studentId] === 'Present'}
+                          onChange={() => handleStatusChange(student.studentId, 'Present')}
+                          className="accent-green w-4 h-4"
+                        />
+                        <span className={`text-[13px] ${attendanceData[student.studentId] === 'Present' ? 'text-green font-medium' : 'text-text2'}`}>Present</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={`status-${student.studentId}`}
+                          checked={attendanceData[student.studentId] === 'Absent'}
+                          onChange={() => handleStatusChange(student.studentId, 'Absent')}
+                          className="accent-red w-4 h-4"
+                        />
+                        <span className={`text-[13px] ${attendanceData[student.studentId] === 'Absent' ? 'text-red font-medium' : 'text-text2'}`}>Absent</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer group">
+                        <input
+                          type="radio"
+                          name={`status-${student.studentId}`}
+                          checked={attendanceData[student.studentId] === 'Late'}
+                          onChange={() => handleStatusChange(student.studentId, 'Late')}
+                          className="accent-amber w-4 h-4"
+                        />
+                        <span className={`text-[13px] ${attendanceData[student.studentId] === 'Late' ? 'text-amber font-medium' : 'text-text2'}`}>Late</span>
+                      </label>
+                    </div>
+
+                    {/* Mobile View: One Button Cycling (P/A Only) */}
+                    <div className="flex sm:hidden items-center justify-end">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const current = attendanceData[student.studentId];
+                          const next = current === 'Present' ? 'Absent' : 'Present';
+                          handleStatusChange(student.studentId, next);
+                        }}
+                        className={`w-12 h-10 rounded-lg flex items-center justify-center font-bold text-[15px] transition-all duration-200 shadow-sm ${
+                          attendanceData[student.studentId] === 'Present' ? 'bg-green text-white' :
+                          attendanceData[student.studentId] === 'Absent' ? 'bg-red text-white' :
+                          'bg-surface border border-border text-text3'
+                        }`}
+                      >
+                        {attendanceData[student.studentId] === 'Present' ? 'P' :
+                         attendanceData[student.studentId] === 'Absent' ? 'A' : '?'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {students.filter(student => student.fullName.toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                <div className="p-10 text-center text-text3">No students found in this class.</div>
+              )}
+            </div>
+          ) : (
+            <div className="text-center p-10 text-text3">No students found in this class.</div>
+          )}
+        </>
+      )}
       </div>
     </>
   );
