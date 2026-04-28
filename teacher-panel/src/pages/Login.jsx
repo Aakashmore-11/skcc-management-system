@@ -13,7 +13,7 @@ export default function Login() {
     e.preventDefault();
     try {
       const res = await axios.post('/api/teachers/login', { username, password });
-      Cookies.set('teacher_token', res.data.token, { expires: 1 });
+      Cookies.set('teacher_token', res.data.token, { expires: 1, path: '/' });
       localStorage.setItem('teacher_name', res.data.name);
       navigate('/');
     } catch (err) {
