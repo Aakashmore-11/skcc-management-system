@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import axios from '../api/axios';
-import { 
-  Phone, Users, UserX, Calendar, BarChart3, ChevronRight, 
+import {
+  Phone, Users, UserX, Calendar, BarChart3, ChevronRight,
   Search, FileDown, FileSpreadsheet, ArrowLeft,
   CheckCircle, XCircle, Clock, TrendingUp, Info, AlertCircle
 } from 'lucide-react';
-import { 
-  ResponsiveContainer, PieChart, Pie, Cell, 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip 
+import {
+  ResponsiveContainer, PieChart, Pie, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip
 } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -36,7 +36,7 @@ export default function AttendanceMonitor() {
   const [selectedDate, setSelectedDate] = useState(getLocalDate());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  
+
   const [absentees, setAbsentees] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -103,11 +103,11 @@ export default function AttendanceMonitor() {
   const exportToPDF = () => {
     const doc = new jsPDF();
     const className = classes.find(c => c._id === selectedClass)?.className || 'All Classes';
-    
+
     doc.setFontSize(20);
     doc.setTextColor(15, 23, 42);
     doc.text(`Monthly Attendance Report`, 14, 22);
-    
+
     doc.setFontSize(12);
     doc.setTextColor(100);
     doc.text(`Class: ${className} | Period: ${selectedMonth}/${selectedYear}`, 14, 32);
@@ -160,15 +160,15 @@ export default function AttendanceMonitor() {
             <p className="text-xs text-text2">Track patterns and monitor absentee performance</p>
           </div>
         </div>
-        
+
         <div className="flex bg-surface p-1 rounded-xl border border-border">
-          <button 
+          <button
             onClick={() => setActiveTab('absentees')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all ${activeTab === 'absentees' ? 'bg-card text-text1 shadow-sm' : 'text-text2 hover:text-text1'}`}
           >
             <UserX size={16} /> <span className="hidden sm:inline">Absentees</span>
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('monthly')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm transition-all ${activeTab === 'monthly' ? 'bg-card text-text1 shadow-sm' : 'text-text2 hover:text-text1'}`}
           >
@@ -184,7 +184,7 @@ export default function AttendanceMonitor() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-widest text-text3 font-bold ml-1">Filter Class</label>
-              <select 
+              <select
                 className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-accent transition-colors"
                 value={selectedClass}
                 onChange={e => setSelectedClass(e.target.value)}
@@ -200,8 +200,8 @@ export default function AttendanceMonitor() {
                   <span className="text-sm font-medium text-text1">{selectedDate.split('-').reverse().join('-')}</span>
                   <Calendar size={16} className="text-text2" />
                 </div>
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   value={selectedDate}
                   onChange={e => setSelectedDate(e.target.value)}
@@ -212,14 +212,14 @@ export default function AttendanceMonitor() {
             <div className="space-y-2">
               <label className="text-[10px] uppercase tracking-widest text-text3 font-bold ml-1">Search Absentees</label>
               <div className="relative">
-                <Search size={16} className="absolute left-4 top-3 text-text3" />
-                <input 
+                <input
                   type="text"
                   placeholder="Search student name..."
-                  className="w-full bg-card border border-border rounded-xl pl-11 pr-4 py-2.5 text-sm outline-none focus:border-accent transition-colors"
+                  className="w-full bg-card border border-border rounded-xl pl-4 pr-11 py-2.5 text-sm outline-none focus:border-accent transition-colors"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                 />
+                <Search size={16} className="absolute right-4 top-3 text-text3" />
               </div>
             </div>
           </div>
@@ -228,11 +228,11 @@ export default function AttendanceMonitor() {
           <div className="bg-card/50 rounded-2xl border border-border overflow-hidden">
             <div className="px-4 sm:px-6 py-4 border-b border-border bg-card/80 flex items-center justify-between">
               <h3 className="font-semibold text-text1 flex items-center gap-2 text-sm sm:text-base">
-                <UserX size={18} className="text-red" /> 
+                <UserX size={18} className="text-red" />
                 Absent Students ({absentees.filter(a => a.student.fullName.toLowerCase().includes(searchTerm.toLowerCase())).length})
               </h3>
             </div>
-            
+
             {/* Desktop Table View */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left border-collapse">
@@ -252,31 +252,31 @@ export default function AttendanceMonitor() {
                   ) : absentees
                     .filter(a => a.student.fullName.toLowerCase().includes(searchTerm.toLowerCase()))
                     .map((absentee) => (
-                    <tr key={absentee._id} className="hover:bg-surface/30 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-red/10 text-red flex items-center justify-center text-xs font-bold">
-                            {absentee.student.fullName[0]}
+                      <tr key={absentee._id} className="hover:bg-surface/30 transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-red/10 text-red flex items-center justify-center text-xs font-bold">
+                              {absentee.student.fullName[0]}
+                            </div>
+                            <span className="font-medium text-text1">{absentee.student.fullName}</span>
                           </div>
-                          <span className="font-medium text-text1">{absentee.student.fullName}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="text-xs bg-surface px-2 py-1 rounded border border-border text-text2">
-                          {absentee.classId.className}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-text2 text-sm">{absentee.student.mobileNo}</td>
-                      <td className="px-6 py-4 text-right">
-                        <button 
-                          onClick={() => fetchStudentDetails(absentee.student._id)}
-                          className="p-2 text-text3 hover:text-accent hover:bg-accent/10 rounded-lg transition-all"
-                        >
-                          <ChevronRight size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-xs bg-surface px-2 py-1 rounded border border-border text-text2">
+                            {absentee.classId.className}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-text2 text-sm">{absentee.student.mobileNo}</td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={() => fetchStudentDetails(absentee.student._id)}
+                            className="p-2 text-text3 hover:text-accent hover:bg-accent/10 rounded-lg transition-all"
+                          >
+                            <ChevronRight size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -290,23 +290,23 @@ export default function AttendanceMonitor() {
               ) : absentees
                 .filter(a => a.student.fullName.toLowerCase().includes(searchTerm.toLowerCase()))
                 .map((absentee) => (
-                <div key={absentee._id} className="p-4 flex items-center justify-between hover:bg-surface/30 transition-colors" onClick={() => fetchStudentDetails(absentee.student._id)}>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-red/10 text-red flex items-center justify-center text-sm font-bold">
-                      {absentee.student.fullName[0]}
-                    </div>
-                    <div>
-                      <div className="font-bold text-text1 text-sm">{absentee.student.fullName}</div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[10px] text-text3 uppercase font-bold">{absentee.classId.className}</span>
-                        <span className="w-1 h-1 rounded-full bg-border"></span>
-                        <span className="text-[11px] text-text2">{absentee.student.mobileNo}</span>
+                  <div key={absentee._id} className="p-4 flex items-center justify-between hover:bg-surface/30 transition-colors" onClick={() => fetchStudentDetails(absentee.student._id)}>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-red/10 text-red flex items-center justify-center text-sm font-bold">
+                        {absentee.student.fullName[0]}
+                      </div>
+                      <div>
+                        <div className="font-bold text-text1 text-sm">{absentee.student.fullName}</div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className="text-[10px] text-text3 uppercase font-bold">{absentee.classId.className}</span>
+                          <span className="w-1 h-1 rounded-full bg-border"></span>
+                          <span className="text-[11px] text-text2">{absentee.student.mobileNo}</span>
+                        </div>
                       </div>
                     </div>
+                    <ChevronRight size={16} className="text-text3" />
                   </div>
-                  <ChevronRight size={16} className="text-text3" />
-                </div>
-              ))}
+                ))}
             </div>
           </div>
         </div>
@@ -316,7 +316,7 @@ export default function AttendanceMonitor() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:items-end gap-3 sm:gap-4">
             <div className="lg:flex-1 space-y-2">
               <label className="text-[10px] uppercase tracking-widest text-text3 font-bold ml-1">Select Class</label>
-              <select 
+              <select
                 className="w-full bg-card border border-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-accent transition-colors h-[42px]"
                 value={selectedClass}
                 onChange={e => setSelectedClass(e.target.value)}
@@ -327,25 +327,39 @@ export default function AttendanceMonitor() {
             <div className="grid grid-cols-2 lg:flex gap-3">
               <div className="space-y-2">
                 <label className="text-[10px] uppercase tracking-widest text-text3 font-bold ml-1">Month</label>
-                <select 
+                <select
                   className="w-full lg:w-32 bg-card border border-border rounded-xl px-4 py-2.5 text-sm outline-none h-[42px]"
                   value={selectedMonth}
                   onChange={e => setSelectedMonth(parseInt(e.target.value))}
                 >
-                  {Array.from({length: 12}, (_, i) => (
-                    <option key={i+1} value={i+1}>{new Date(0, i).toLocaleString('default', { month: 'short' })}</option>
+                  {Array.from({ length: 12 }, (_, i) => (
+                    <option key={i + 1} value={i + 1}>{new Date(0, i).toLocaleString('default', { month: 'short' })}</option>
                   ))}
                 </select>
               </div>
               <div className="space-y-2">
                 <label className="text-[10px] uppercase tracking-widest text-text3 font-bold ml-1">Year</label>
-                <select 
+                <select
                   className="w-full lg:w-28 bg-card border border-border rounded-xl px-4 py-2.5 text-sm outline-none h-[42px]"
                   value={selectedYear}
                   onChange={e => setSelectedYear(parseInt(e.target.value))}
                 >
                   {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                 </select>
+              </div>
+            </div>
+
+            <div className="space-y-2 lg:flex-1">
+              <label className="text-[10px] uppercase tracking-widest text-text3 font-bold ml-1">Search Student</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search student..."
+                  className="w-full bg-card border border-border rounded-xl pl-4 pr-11 py-2.5 text-sm outline-none focus:border-accent transition-colors h-[42px]"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+                <Search size={16} className="absolute right-4 top-3 text-text3" />
               </div>
             </div>
             <div className="flex gap-2 w-full lg:w-auto">
@@ -365,13 +379,15 @@ export default function AttendanceMonitor() {
                 <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
                 <span className="text-xs uppercase tracking-widest opacity-60">Loading performance data...</span>
               </div>
-            ) : monthlyData.length === 0 ? (
+            ) : monthlyData.filter(s => s.fullName.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
               <div className="md:col-span-2 lg:col-span-3 text-center py-16 bg-surface/30 rounded-2xl border border-border/50">
-                <p className="text-sm text-text3 italic font-medium">No records found for this period</p>
+                <p className="text-sm text-text3 italic font-medium">No students found matching your search</p>
               </div>
-            ) : monthlyData.map((student, idx) => (
-              <div 
-                key={student.studentId} 
+            ) : monthlyData
+              .filter(s => s.fullName.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map((student, idx) => (
+              <div
+                key={student.studentId}
                 className="bg-card/50 backdrop-blur-md rounded-2xl border border-border/60 p-4 hover:border-accent/40 hover:bg-card transition-all duration-300 group"
               >
                 <div className="flex items-center justify-between mb-4">
@@ -391,7 +407,7 @@ export default function AttendanceMonitor() {
                       </div>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => fetchStudentDetails(student.studentId)}
                     className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-text2 hover:text-accent hover:bg-accent/10 transition-all border border-border group/btn"
                   >
@@ -420,12 +436,11 @@ export default function AttendanceMonitor() {
                     <span>{student.stats.percentage}%</span>
                   </div>
                   <div className="h-1.5 bg-surface rounded-full overflow-hidden border border-border/30">
-                    <div 
-                      className={`h-full transition-all duration-1000 ${
-                        student.stats.percentage > 75 ? 'bg-green' : 
-                        student.stats.percentage > 60 ? 'bg-amber' : 
-                        'bg-red'
-                      }`}
+                    <div
+                      className={`h-full transition-all duration-1000 ${student.stats.percentage > 75 ? 'bg-green' :
+                          student.stats.percentage > 60 ? 'bg-amber' :
+                            'bg-red'
+                        }`}
                       style={{ width: `${student.stats.percentage}%` }}
                     />
                   </div>
@@ -450,7 +465,7 @@ export default function AttendanceMonitor() {
               </div>
               <button onClick={() => setSelectedStudent(null)} className="p-1.5 hover:bg-surface rounded-lg transition-colors text-text3">✕</button>
             </div>
-            
+
             <div className="p-4 sm:p-5 space-y-4 max-h-[85vh] overflow-y-auto">
               {/* Minimal Clean Profile Header */}
               <div className="bg-surface/30 rounded-2xl border border-border/50 p-4 sm:p-5">
@@ -459,7 +474,7 @@ export default function AttendanceMonitor() {
                   <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-accent/10 flex items-center justify-center text-accent text-2xl font-bold border border-accent/20 shrink-0">
                     {selectedStudent.student.fullName[0]}
                   </div>
-                  
+
                   {/* Main Info */}
                   <div className="min-w-0 flex-1">
                     <h2 className="text-lg sm:text-xl font-bold text-text1 truncate">{selectedStudent.student.fullName}</h2>
@@ -476,7 +491,7 @@ export default function AttendanceMonitor() {
 
                 {/* Secondary Info Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5 pt-5 border-t border-border/30">
-                  <a 
+                  <a
                     href={`tel:${selectedStudent.student.mobileNo}`}
                     className="flex items-center gap-3 bg-card/30 p-3 rounded-xl border border-border/40 hover:border-accent/40 hover:bg-accent/5 transition-all group/call"
                   >
@@ -537,7 +552,7 @@ export default function AttendanceMonitor() {
                     <div key={i} className="w-8 h-10 rounded-lg flex flex-col items-center justify-center border border-border/60 group relative cursor-help bg-surface/20">
                       <div className={`w-1.5 h-1.5 rounded-full mb-1 ${record.status === 'Present' ? 'bg-green' : record.status === 'Absent' ? 'bg-red' : 'bg-amber'}`} />
                       <span className="text-[9px] font-bold text-text3">{new Date(record.date).getDate()}</span>
-                      
+
                       <div className="absolute bottom-full mb-2 hidden group-hover:block z-50">
                         <div className="bg-bg border border-border px-2 py-1 rounded text-[9px] whitespace-nowrap shadow-xl">
                           <span className="font-bold">{new Date(record.date).toLocaleDateString()}</span>: <span className={record.status === 'Present' ? 'text-green' : 'text-red'}>{record.status}</span>
@@ -558,10 +573,9 @@ export default function AttendanceMonitor() {
                           <div className="font-mono text-text2">{new Date(record.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</div>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${
-                            record.status === 'Present' ? 'bg-green/10 text-green' : 
-                            record.status === 'Absent' ? 'bg-red/10 text-red' : 'bg-amber/10 text-amber'
-                          }`}>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${record.status === 'Present' ? 'bg-green/10 text-green' :
+                              record.status === 'Absent' ? 'bg-red/10 text-red' : 'bg-amber/10 text-amber'
+                            }`}>
                             {record.status}
                           </span>
                         </td>

@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
-import { Download, Plus, Receipt } from 'lucide-react';
+import { Download, Plus, Receipt, Search } from 'lucide-react';
 
 export default function Fees() {
   const [fees, setFees] = useState([]);
   const [students, setStudents] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ studentId: '', amountPaid: '' });
+  const [searchTerm, setSearchTerm] = useState('');
+  const [studentSearch, setStudentSearch] = useState('');
+  const [showStudentDropdown, setShowStudentDropdown] = useState(false);
 
   useEffect(() => {
     fetchFees();
@@ -63,6 +66,8 @@ export default function Fees() {
       setFormData({ studentId: '', amountPaid: '' });
       fetchFees();
       fetchStudents();
+      setStudentSearch('');
+      setShowStudentDropdown(false);
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.error || error.message;
@@ -237,9 +242,21 @@ export default function Fees() {
           <div className="card-title text-[18px]">Fees & Receipts</div>
           <div className="card-subtitle">Record payments and generate official receipts.</div>
         </div>
-        <button className="btn btn-primary w-full sm:w-auto" onClick={() => setShowForm(!showForm)}>
-          <Plus size={16} /> {showForm ? 'Cancel Transaction' : 'Record Payment'}
-        </button>
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-64">
+            <input 
+              type="text" 
+              className="form-control pr-10 h-[38px]" 
+              placeholder="Search receipts..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-text3" />
+          </div>
+          <button className="btn btn-primary w-full sm:w-auto" onClick={() => setShowForm(!showForm)}>
+            <Plus size={16} /> {showForm ? 'Cancel Transaction' : 'Record Payment'}
+          </button>
+        </div>
       </div>
 
       {showForm && (
@@ -248,16 +265,56 @@ export default function Fees() {
             <Receipt size={16} color="var(--accent)" /> New Transaction
           </div>
           <form onSubmit={handleRecordFee} className="flex flex-col gap-4">
-            <div className="form-group">
+            <div className="form-group relative">
               <label className="form-label">Select Student Account</label>
-              <select className="form-control" value={formData.studentId} onChange={e => setFormData({ ...formData, studentId: e.target.value })} required>
-                <option value="">-- Choose Student --</option>
-                {students.map(s => (
-                  <option key={s._id} value={s._id}>
-                    {s.fullName} • (Pending Due: {s.feesPending === 0 ? 'NIL' : `₹${s.feesPending.toLocaleString()}`})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <input
+                  type="text"
+                  className="form-control pl-5 pr-12 py-3 rounded-full border-accent bg-surface/30 focus:bg-surface/50 transition-all border-2"
+                  placeholder="Search student..."
+                  value={studentSearch}
+                  onChange={(e) => {
+                    setStudentSearch(e.target.value);
+                    setShowStudentDropdown(true);
+                    if (formData.studentId) setFormData({ ...formData, studentId: '' });
+                  }}
+                  onFocus={() => setShowStudentDropdown(true)}
+                />
+                <Search size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-text3" />
+              </div>
+              
+              {showStudentDropdown && studentSearch && (
+                <div className="absolute z-[100] w-full mt-2 bg-[#1a1f2e] border border-white/10 rounded-2xl shadow-2xl max-h-60 overflow-y-auto backdrop-blur-xl">
+                  {students.filter(s => s.fullName.toLowerCase().includes(studentSearch.toLowerCase())).length > 0 ? (
+                    students
+                      .filter(s => s.fullName.toLowerCase().includes(studentSearch.toLowerCase()))
+                      .map(s => (
+                        <div 
+                          key={s._id}
+                          className="px-5 py-3 hover:bg-accent/20 cursor-pointer border-b border-white/5 last:border-0 transition-colors group"
+                          onClick={() => {
+                            setFormData({ ...formData, studentId: s._id });
+                            setStudentSearch(s.fullName);
+                            setShowStudentDropdown(false);
+                          }}
+                        >
+                          <div className="font-medium text-text1 group-hover:text-accent transition-colors">{s.fullName}</div>
+                          <div className="text-[10px] text-text3 uppercase mt-0.5 font-bold tracking-wider">
+                            Pending Due: <span className={s.feesPending > 0 ? 'text-red' : 'text-green'}>₹{s.feesPending.toLocaleString()}</span>
+                          </div>
+                        </div>
+                      ))
+                  ) : (
+                    <div className="px-5 py-4 text-text3 italic text-sm text-center">No students found</div>
+                  )}
+                </div>
+              )}
+              {formData.studentId && (
+                <div className="mt-2 px-4 py-2 bg-accent/10 border border-accent/20 rounded-xl flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
+                  <span className="text-xs font-bold text-accent uppercase">Selected: {students.find(s => s._id === formData.studentId)?.fullName}</span>
+                  <button type="button" onClick={() => { setFormData({ ...formData, studentId: '' }); setStudentSearch(''); }} className="text-text3 hover:text-red transition-colors">✕</button>
+                </div>
+              )}
             </div>
             <div className="form-group">
               <label className="form-label">Amount Received (₹)</label>
@@ -281,7 +338,21 @@ export default function Fees() {
             </tr>
           </thead>
           <tbody>
-            {fees.map(fee => (
+            {fees.length === 0 ? (
+              <tr>
+                <td colSpan="5" className="text-center p-10 text-text3">No transactions found.</td>
+              </tr>
+            ) : fees.filter(fee => 
+                fee.student?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                fee.receiptNumber?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+              ).length === 0 ? (
+              <tr>
+                <td colSpan="5" className="text-center p-10 text-text3">No receipts match your search.</td>
+              </tr>
+            ) : fees.filter(fee => 
+                fee.student?.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                fee.receiptNumber?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+              ).map(fee => (
               <tr key={fee._id}>
                 <td><span className="student-id">{fee.receiptNumber}</span></td>
                 <td><div className="student-name">{fee.student?.fullName || 'Unknown/Deleted'}</div></td>
@@ -294,11 +365,6 @@ export default function Fees() {
                 </td>
               </tr>
             ))}
-            {fees.length === 0 && (
-              <tr>
-                <td colSpan="5" className="text-center p-10 text-text3">No transactions found.</td>
-              </tr>
-            )}
           </tbody>
         </table>
         </div>
