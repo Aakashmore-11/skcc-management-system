@@ -9,7 +9,8 @@ export default function Teachers() {
   const [isEditing, setIsEditing] = useState(null);
   
   const [formData, setFormData] = useState({
-    name: '', username: '', password: '', role: 'Teacher', isActive: true
+    name: '', username: '', password: '', role: 'Teacher', isActive: true,
+    permissions: { canAccessReports: false }
   });
 
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function Teachers() {
       }
       setShowForm(false);
       setIsEditing(null);
-      setFormData({ name: '', username: '', password: '', role: 'Teacher', isActive: true });
+      setFormData({ name: '', username: '', password: '', role: 'Teacher', isActive: true, permissions: { canAccessReports: false } });
       fetchTeachers();
     } catch (error) {
       alert(error.response?.data?.msg || 'Error saving teacher');
@@ -52,7 +53,8 @@ export default function Teachers() {
       username: teacher.username,
       password: '', // Blank by default when editing
       role: teacher.role,
-      isActive: teacher.isActive
+      isActive: teacher.isActive,
+      permissions: teacher.permissions || { canAccessReports: false }
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -85,7 +87,7 @@ export default function Teachers() {
           setShowForm(!showForm); 
           if(showForm) { 
             setIsEditing(null); 
-            setFormData({ name: '', username: '', password: '', role: 'Teacher', isActive: true }); 
+            setFormData({ name: '', username: '', password: '', role: 'Teacher', isActive: true, permissions: { canAccessReports: false } }); 
           } 
         }}>
           <Plus size={16} /> {showForm ? 'Cancel' : 'Add Teacher'}
@@ -124,6 +126,15 @@ export default function Teachers() {
                 <input type="checkbox" className="sr-only peer" checked={formData.isActive} onChange={e => setFormData({...formData, isActive: e.target.checked})} />
                 <div className="w-11 h-6 bg-surface peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green border border-border"></div>
                 <span className="ml-3 text-sm font-medium text-text2">{formData.isActive ? 'Active' : 'Inactive'}</span>
+              </label>
+            </div>
+
+            <div className="form-group mb-0 flex items-center gap-3">
+              <label className="form-label mb-0">Monitor Access</label>
+              <label className="relative inline-flex items-center cursor-pointer mt-1">
+                <input type="checkbox" className="sr-only peer" checked={formData.permissions.canAccessReports} onChange={e => setFormData({...formData, permissions: { ...formData.permissions, canAccessReports: e.target.checked }})} />
+                <div className="w-11 h-6 bg-surface peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent border border-border"></div>
+                <span className="ml-3 text-sm font-medium text-text2">{formData.permissions.canAccessReports ? 'Permitted' : 'Denied'}</span>
               </label>
             </div>
             

@@ -37,11 +37,25 @@ router.post('/login', async (req, res) => {
     const payload = { admin: { id: teacher.id, role: 'teacher' } };
     jwt.sign(payload, process.env.JWT_SECRET || 'secretToken', { expiresIn: 360000 }, (err, token) => {
       if (err) throw err;
-      res.json({ token, name: teacher.name });
+      res.json({ token, name: teacher.name, permissions: teacher.permissions });
     });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
+  }
+});
+
+// @route   GET api/teachers/me
+// @desc    Get current teacher profile
+// @access  Private
+router.get('/me', auth, async (req, res) => {
+  try {
+    const teacher = await Teacher.findById(req.admin.id).select('-password');
+    if (!teacher) return res.status(404).json({ msg: 'Teacher not found' });
+    res.json(teacher);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
@@ -59,14 +73,14 @@ router.get('/', auth, async (req, res) => {
 // @route   POST api/teachers
 router.post('/', auth, async (req, res) => {
   try {
-    const { name, username, password, role } = req.body;
+    const { name, username, password, role, permissions } = req.body;
     let teacher = await Teacher.findOne({ username });
     if (teacher) return res.status(400).json({ msg: 'Teacher already exists' });
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    teacher = new Teacher({ name, username, password: hashedPassword, role });
+    teacher = new Teacher({ name, username, password: hashedPassword, role, permissions });
     await teacher.save();
 
     await logAudit(req.admin.id, 'CREATE_TEACHER', `Created teacher account: ${username}`);
@@ -79,7 +93,7 @@ router.post('/', auth, async (req, res) => {
 // @route   PUT api/teachers/:id
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { name, username, password, isActive, role } = req.body;
+    const { name, username, password, isActive, role, permissions } = req.body;
     let teacher = await Teacher.findById(req.params.id);
     if (!teacher) return res.status(404).json({ msg: 'Teacher not found' });
 
@@ -87,6 +101,7 @@ router.put('/:id', auth, async (req, res) => {
     if (username) teacher.username = username;
     if (isActive !== undefined) teacher.isActive = isActive;
     if (role) teacher.role = role;
+    if (permissions) teacher.permissions = permissions;
     
     if (password) {
       const salt = await bcrypt.genSalt(10);

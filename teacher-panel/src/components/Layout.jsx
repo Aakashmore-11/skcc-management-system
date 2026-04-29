@@ -1,10 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { Menu } from 'lucide-react';
+import axios from '../api/axios';
 
 export default function Layout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [permissions, setPermissions] = useState(() => 
+    JSON.parse(localStorage.getItem('teacher_permissions') || '{}')
+  );
+
+  useEffect(() => {
+    const syncPermissions = async () => {
+      try {
+        const res = await axios.get('/api/teachers/me');
+        localStorage.setItem('teacher_permissions', JSON.stringify(res.data.permissions));
+        setPermissions(res.data.permissions);
+      } catch (err) {
+        console.error('Permission sync failed:', err);
+      }
+    };
+    syncPermissions();
+  }, []);
 
   return (
     <div className="flex h-screen bg-background text-text1 overflow-hidden relative">
@@ -18,7 +35,7 @@ export default function Layout() {
 
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 w-[240px] shrink-0 border-r border-border bg-background transform transition-transform duration-300 lg:relative lg:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <Sidebar closeSidebar={() => setIsSidebarOpen(false)} />
+        <Sidebar closeSidebar={() => setIsSidebarOpen(false)} permissions={permissions} />
       </div>
 
       {/* Main Content */}

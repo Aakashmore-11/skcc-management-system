@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from '../api/axios';
 import {
   Phone, Users, UserX, Calendar, BarChart3, ChevronRight,
@@ -30,6 +31,7 @@ const COLORS = {
 };
 
 export default function AttendanceMonitor() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('absentees');
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState('');
@@ -44,6 +46,11 @@ export default function AttendanceMonitor() {
   const [selectedStudent, setSelectedStudent] = useState(null);
 
   useEffect(() => {
+    const permissions = JSON.parse(localStorage.getItem('teacher_permissions') || '{}');
+    if (!permissions.canAccessReports) {
+      navigate('/attendance');
+      return;
+    }
     fetchClasses();
   }, []);
 

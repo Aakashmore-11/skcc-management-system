@@ -7,13 +7,20 @@ const NAV_ITEMS = [
   { icon: "📊", label: "Monitor & Reports", path: "/monitor" },
 ];
 
-export default function Sidebar({ closeSidebar }) {
+export default function Sidebar({ closeSidebar, permissions: propPermissions }) {
   const navigate = useNavigate();
   const teacherName = localStorage.getItem('teacher_name') || 'Teacher';
+  const permissions = propPermissions || JSON.parse(localStorage.getItem('teacher_permissions') || '{}');
+
+  const filteredNavItems = NAV_ITEMS.filter(item => {
+    if (item.path === '/monitor' && !permissions.canAccessReports) return false;
+    return true;
+  });
 
   const handleLogout = () => {
     Cookies.remove('teacher_token');
     localStorage.removeItem('teacher_name');
+    localStorage.removeItem('teacher_permissions');
     navigate('/login');
   };
 
@@ -45,7 +52,7 @@ export default function Sidebar({ closeSidebar }) {
 
       <div className="px-3 py-4">
         <div className="px-2 mb-2 text-[10px] font-medium tracking-wider text-text3 uppercase">Main</div>
-        {NAV_ITEMS.map((item) => (
+        {filteredNavItems.map((item) => (
           <NavLink
             key={item.label}
             to={item.path}

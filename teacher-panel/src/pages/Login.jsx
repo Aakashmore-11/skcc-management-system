@@ -19,6 +19,7 @@ export default function Login() {
       const res = await axios.post('/api/teachers/login', { username, password });
       Cookies.set('teacher_token', res.data.token, { expires: 1, path: '/' });
       localStorage.setItem('teacher_name', res.data.name);
+      localStorage.setItem('teacher_permissions', JSON.stringify(res.data.permissions));
       navigate('/');
     } catch (err) {
       setError(err.response?.data?.msg || 'Invalid credentials. Please try again.');
