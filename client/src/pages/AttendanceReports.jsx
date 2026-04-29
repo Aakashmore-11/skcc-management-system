@@ -228,7 +228,7 @@ export default function AttendanceReports() {
               <h3 className="text-sm font-medium mb-4 flex items-center gap-2"><BarChart2 size={16} className="text-accent"/> Daily Distribution</h3>
               <div className="h-[200px] w-full flex justify-center items-center">
                 {pieData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <PieChart>
                       <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} paddingAngle={2} dataKey="value" stroke="none">
                         {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}

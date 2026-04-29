@@ -176,12 +176,12 @@ export default function Attendance() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
         <div className="stat-card" style={{ background: 'rgba(79, 124, 255, 0.05)', border: '1px solid rgba(79, 124, 255, 0.1)' }}>
           <div className="stat-top">
-            <div className="stat-label">Total Students</div>
+            <div className="stat-label">{selectedClass ? 'Class Students' : 'Total Students'}</div>
             <div className="stat-icon" style={{ background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)' }}>
               <Users size={16} />
             </div>
           </div>
-          <div className="stat-value text-accent">{stats.totalStudents}</div>
+          <div className="stat-value text-accent">{selectedClass ? students.length : stats.totalStudents}</div>
         </div>
 
         <div className="stat-card" style={{ background: 'rgba(34, 212, 143, 0.05)', border: '1px solid rgba(34, 212, 143, 0.1)' }}>

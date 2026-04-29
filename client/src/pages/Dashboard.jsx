@@ -269,7 +269,7 @@ export default function Dashboard() {
               >Monthly</div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={200} minWidth={0}>
             <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
@@ -303,7 +303,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="donut-wrap" style={{ flexDirection: 'column', alignItems: 'center', gap: '0px' }}>
-            <ResponsiveContainer width="100%" height={100}>
+            <ResponsiveContainer width="100%" height={100} minWidth={0}>
               <PieChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                 <Pie
                   data={charts.donutData}
@@ -370,7 +370,7 @@ export default function Dashboard() {
               <div className="card-subtitle">Enrollment by class level</div>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={160}>
+          <ResponsiveContainer width="100%" height={160} minWidth={0}>
             <BarChart 
               data={charts.studentDistribution} 
               margin={{ top: 20, right: 10, left: -20, bottom: 0 }}
