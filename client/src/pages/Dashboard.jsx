@@ -199,7 +199,7 @@ export default function Dashboard() {
           colorClass="card-blue"
           iconBg="rgba(79,124,255,0.15)"
           iconColor="#4f7cff"
-          change="+12 this month"
+          change={`+${summary.newStudentsThisMonth || 0} this month`}
           changeType="up"
           period="vs last month"
         />
@@ -210,8 +210,8 @@ export default function Dashboard() {
           colorClass="card-green"
           iconBg="rgba(34,212,143,0.15)"
           iconColor="#22d48f"
-          change="+₹4,200"
-          changeType="up"
+          change={`${summary.collectionDiff >= 0 ? '+' : ''}${fmt(summary.collectionDiff || 0)}`}
+          changeType={summary.collectionDiff >= 0 ? "up" : "down"}
           period="vs yesterday"
         />
         <StatCard
@@ -221,8 +221,8 @@ export default function Dashboard() {
           colorClass="card-amber"
           iconBg="rgba(245,166,35,0.15)"
           iconColor="#f5a623"
-          change="+8.3%"
-          changeType="up"
+          change={`${summary.revenueDiff >= 0 ? '+' : ''}${summary.revenueDiff || 0}%`}
+          changeType={summary.revenueDiff >= 0 ? "up" : "down"}
           period="vs last month"
         />
         <StatCard
@@ -232,7 +232,7 @@ export default function Dashboard() {
           colorClass="card-red"
           iconBg="rgba(240,75,75,0.15)"
           iconColor="#f04b4b"
-          change={`${summary.pendingFeesCount} students`}
+          change={`${summary.pendingFeesCount || 0} students`}
           changeType="down"
           period="with unpaid fees"
         />
@@ -243,7 +243,7 @@ export default function Dashboard() {
           colorClass="card-purple"
           iconBg="rgba(124,92,255,0.15)"
           iconColor="#7c5cff"
-          change={`${summary.absentToday} absent`}
+          change={`${summary.absentToday || 0} absent`}
           changeType="down"
           period="out of total"
         />
@@ -299,7 +299,7 @@ export default function Dashboard() {
           <div className="card-header">
             <div>
               <div className="card-title">Collection Status</div>
-              <div className="card-subtitle">April 2026</div>
+              <div className="card-subtitle">{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</div>
             </div>
           </div>
           <div className="donut-wrap" style={{ flexDirection: 'column', alignItems: 'center', gap: '0px' }}>

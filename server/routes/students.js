@@ -4,11 +4,26 @@ const Student = require('../models/Student');
 const Class = require('../models/Class');
 const auth = require('../middleware/auth');
 
-// Get all students
+// Get students with pagination
 router.get('/', auth, async (req, res) => {
   try {
-    const students = await Student.find().populate('assignedClass');
-    res.json(students);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+
+    const totalStudents = await Student.countDocuments();
+    const students = await Student.find()
+      .populate('assignedClass')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    res.json({
+      students,
+      currentPage: page,
+      totalPages: Math.ceil(totalStudents / limit),
+      totalStudents
+    });
   } catch (err) {
     console.error("Error fetching students:", err);
     res.status(500).json({ error: err.message, stack: err.stack });

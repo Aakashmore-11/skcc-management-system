@@ -8,6 +8,10 @@ import * as XLSX from 'xlsx';
 
 export default function Students() {
   const [students, setStudents] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalStudents, setTotalStudents] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [classes, setClasses] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [classFilter, setClassFilter] = useState('');
@@ -22,9 +26,9 @@ export default function Students() {
   });
 
   useEffect(() => {
-    fetchStudents();
+    fetchStudents(currentPage);
     fetchClasses();
-  }, []);
+  }, [currentPage]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -34,12 +38,17 @@ export default function Students() {
     }
   }, [location.search]);
 
-  const fetchStudents = async () => {
+  const fetchStudents = async (page = 1) => {
+    setLoading(true);
     try {
-      const res = await axios.get('/api/students');
-      setStudents(res.data);
+      const res = await axios.get(`/api/students?page=${page}&limit=50`);
+      setStudents(res.data.students);
+      setTotalPages(res.data.totalPages);
+      setTotalStudents(res.data.totalStudents);
     } catch (error) {
       console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,7 +78,7 @@ export default function Students() {
       setShowForm(false);
       setIsEditing(null);
       setFormData({ fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: '' });
-      fetchStudents();
+      fetchStudents(currentPage);
     } catch (error) {
       console.error(error);
     }
@@ -93,7 +102,7 @@ export default function Students() {
     if(window.confirm('Are you sure you want to permanently delete this student?')) {
       try {
         await axios.delete(`/api/students/${id}`);
-        fetchStudents();
+        fetchStudents(currentPage);
       } catch (error) {
         console.error(error);
       }
@@ -298,60 +307,112 @@ export default function Students() {
         </div>
 
         <div className="overflow-x-auto">
-
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Student</th>
-              <th>Contact Info</th>
-              <th>Batch Assigned</th>
-              <th>Total Fees</th>
-              <th>Pending Dues</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredStudents.map(student => (
-              <tr key={student._id}>
-                <td>
-                  <div className="student-cell">
-                    <div className="avatar-sm" style={{ background: 'var(--accent2)' }}>
-                      {student.fullName.substring(0, 2).toUpperCase()}
-                    </div>
-                    <div>
-                      <div className="student-name">{student.fullName}</div>
-                      <div className="student-id">{student._id.substring(student._id.length - 6).toUpperCase()}</div>
-                    </div>
-                  </div>
-                </td>
-                <td style={{ color: 'var(--text2)' }}>{student.contactNumber}</td>
-                <td><span className="class-tag">{student.assignedClass?.className} ({student.assignedClass?.batchName})</span></td>
-                <td><span className="amount-cell">₹{student.totalFees.toLocaleString()}</span></td>
-                <td>
-                  <span className={`badge ${student.feesPending > 0 ? 'badge-amber' : 'badge-green'}`}>
-                    ₹{student.feesPending.toLocaleString()}
-                  </span>
-                </td>
-                 <td>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => handleEditClick(student)} className="btn" style={{ padding: '4px 8px', background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)' }}>
-                      <Edit3 size={14} />
-                    </button>
-                    <button onClick={() => handleDelete(student._id)} className="btn btn-danger" style={{ padding: '4px 8px' }}>
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {filteredStudents.length === 0 && (
+          <table className="data-table">
+            <thead>
               <tr>
-                <td colSpan="6" className="text-center p-10 text-text3">No students found matching your criteria.</td>
+                <th>Student</th>
+                <th>Contact Info</th>
+                <th>Batch Assigned</th>
+                <th>Total Fees</th>
+                <th>Pending Dues</th>
+                <th>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="text-center p-10 text-text3 italic">
+                    <div className="inline-block w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Loading students...
+                  </td>
+                </tr>
+              ) : filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center p-10 text-text3">No students found matching your criteria.</td>
+                </tr>
+              ) : (
+                filteredStudents.map(student => (
+                  <tr key={student._id}>
+                    <td>
+                      <div className="student-cell">
+                        <div className="avatar-sm" style={{ background: 'var(--accent2)' }}>
+                          {student.fullName.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="student-name">{student.fullName}</div>
+                          <div className="student-id">{student._id.substring(student._id.length - 6).toUpperCase()}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td style={{ color: 'var(--text2)' }}>{student.contactNumber}</td>
+                    <td><span className="class-tag">{student.assignedClass?.className} ({student.assignedClass?.batchName})</span></td>
+                    <td><span className="amount-cell">₹{student.totalFees.toLocaleString()}</span></td>
+                    <td>
+                      <span className={`badge ${student.feesPending > 0 ? 'badge-amber' : 'badge-green'}`}>
+                        ₹{student.feesPending.toLocaleString()}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button onClick={() => handleEditClick(student)} className="btn" style={{ padding: '4px 8px', background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)' }}>
+                          <Edit3 size={14} />
+                        </button>
+                        <button onClick={() => handleDelete(student._id)} className="btn btn-danger" style={{ padding: '4px 8px' }}>
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
+
+        {/* Pagination Controls */}
+        {!loading && totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+            <div className="text-[13px] text-text3">
+              Showing <span className="font-bold text-text1">{(currentPage - 1) * 50 + 1}</span> to <span className="font-bold text-text1">{Math.min(currentPage * 50, totalStudents)}</span> of <span className="font-bold text-text1">{totalStudents}</span> students
+            </div>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="btn text-[13px] !py-1 !px-3 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <div className="flex items-center gap-1">
+                {[...Array(totalPages)].map((_, i) => {
+                  const pageNum = i + 1;
+                  // Only show current page, first, last, and pages around current
+                  if (pageNum === 1 || pageNum === totalPages || (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)) {
+                    return (
+                      <button
+                        key={pageNum}
+                        onClick={() => setCurrentPage(pageNum)}
+                        className={`w-8 h-8 rounded-lg text-[13px] font-bold transition-all ${currentPage === pageNum ? 'bg-accent text-white' : 'hover:bg-surface text-text2'}`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (pageNum === currentPage - 2 || pageNum === currentPage + 2) {
+                    return <span key={pageNum} className="text-text3">...</span>;
+                  }
+                  return null;
+                })}
+              </div>
+              <button 
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="btn btn-primary text-[13px] !py-1 !px-3 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

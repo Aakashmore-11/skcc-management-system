@@ -19,4 +19,7 @@ StudentSchema.pre('save', function() {
   this.feesPending = this.totalFees - this.feesPaid;
 });
 
+// Index for faster queries by class
+StudentSchema.index({ assignedClass: 1 });
+
 module.exports = mongoose.model('Student', StudentSchema);

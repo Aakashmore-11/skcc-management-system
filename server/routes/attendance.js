@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const auth = require('../middleware/auth');
 const Attendance = require('../models/Attendance');
@@ -193,23 +194,37 @@ router.get('/report/monthly/:classId', auth, async (req, res) => {
     const endDate = new Date(Date.UTC(year, month, 0));
 
     const students = await Student.find({ assignedClass: classId }).select('fullName _id');
-    const records = await Attendance.find({
-      classId,
-      date: { $gte: startDate, $lte: endDate }
+    const stats = await Attendance.aggregate([
+      {
+        $match: {
+          classId: new mongoose.Types.ObjectId(classId),
+          date: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: '$student',
+          present: { $sum: { $cond: [{ $eq: ['$status', 'Present'] }, 1, 0] } },
+          absent: { $sum: { $cond: [{ $eq: ['$status', 'Absent'] }, 1, 0] } },
+          late: { $sum: { $cond: [{ $eq: ['$status', 'Late'] }, 1, 0] } },
+          total: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const statsMap = {};
+    stats.forEach(s => {
+      statsMap[s._id.toString()] = s;
     });
 
     const report = students.map(student => {
-      const studentRecords = records.filter(r => r.student.toString() === student._id.toString());
-      const present = studentRecords.filter(r => r.status === 'Present').length;
-      const absent = studentRecords.filter(r => r.status === 'Absent').length;
-      const late = studentRecords.filter(r => r.status === 'Late').length;
-      const total = studentRecords.length;
-      const percentage = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
+      const s = statsMap[student._id.toString()] || { present: 0, absent: 0, late: 0, total: 0 };
+      const percentage = s.total > 0 ? Math.round(((s.present + s.late) / s.total) * 100) : 0;
 
       return {
         studentId: student._id,
         fullName: student.fullName,
-        stats: { present, absent, late, total, percentage }
+        stats: { ...s, percentage }
       };
     });
 

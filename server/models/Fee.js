@@ -8,4 +8,7 @@ const FeeSchema = new mongoose.Schema({
   receiptNumber: { type: String, required: true, unique: true }
 }, { timestamps: true });
 
+// Index for faster dashboard queries
+FeeSchema.index({ paymentDate: 1 });
+
 module.exports = mongoose.model('Fee', FeeSchema);

@@ -30,8 +30,8 @@ export default function Fees() {
 
   const fetchStudents = async () => {
     try {
-      const res = await axios.get('/api/students');
-      setStudents(res.data);
+      const res = await axios.get('/api/students?limit=1000');
+      setStudents(res.data.students);
     } catch (error) {
       console.error(error);
       const msg = error.response?.data?.error || error.message;

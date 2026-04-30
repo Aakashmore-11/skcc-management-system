@@ -10,5 +10,7 @@ const AttendanceSchema = new mongoose.Schema({
 
 // Ensure one attendance record per student per day
 AttendanceSchema.index({ student: 1, date: 1 }, { unique: true });
+// Faster queries for class attendance on specific date
+AttendanceSchema.index({ classId: 1, date: 1 });
 
 module.exports = mongoose.model('Attendance', AttendanceSchema);

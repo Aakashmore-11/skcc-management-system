@@ -16,52 +16,84 @@ router.get('/summary', auth, async (req, res) => {
       targetDate.setUTCHours(0, 0, 0, 0);
     }
 
-    const totalStudents = await Student.countDocuments();
-    
-    // Today's collection
     const startOfDay = new Date(targetDate);
     const endOfDay = new Date(targetDate);
     endOfDay.setUTCDate(endOfDay.getUTCDate() + 1);
 
-    const todaysFees = await Fee.aggregate([
-      { $match: { paymentDate: { $gte: startOfDay, $lt: endOfDay } } },
-      { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-    ]);
-    const todaysCollection = todaysFees.length > 0 ? todaysFees[0].total : 0;
-    
-    // Monthly revenue
     const startOfMonth = new Date(targetDate);
     startOfMonth.setDate(1);
     startOfMonth.setHours(0,0,0,0);
     const endOfMonth = new Date(startOfMonth);
     endOfMonth.setMonth(endOfMonth.getMonth() + 1);
 
-    const monthlyFees = await Fee.aggregate([
-      { $match: { paymentDate: { $gte: startOfMonth, $lt: endOfMonth } } },
-      { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+    const startOfYesterday = new Date(startOfDay);
+    startOfYesterday.setUTCDate(startOfYesterday.getUTCDate() - 1);
+    const endOfYesterday = new Date(startOfDay);
+
+    const startOfLastMonth = new Date(startOfMonth);
+    startOfLastMonth.setUTCMonth(startOfLastMonth.getUTCMonth() - 1);
+    const endOfLastMonth = new Date(startOfMonth);
+
+    const [
+      totalStudents,
+      newStudentsThisMonth,
+      todaysFees,
+      yesterdayFees,
+      monthlyFees,
+      lastMonthFees,
+      feeStats,
+      presentToday,
+      absentToday,
+      lateToday
+    ] = await Promise.all([
+      Student.countDocuments(),
+      Student.countDocuments({ admissionDate: { $gte: startOfMonth } }),
+      Fee.aggregate([
+        { $match: { paymentDate: { $gte: startOfDay, $lt: endOfDay } } },
+        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+      ]),
+      Fee.aggregate([
+        { $match: { paymentDate: { $gte: startOfYesterday, $lt: endOfYesterday } } },
+        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+      ]),
+      Fee.aggregate([
+        { $match: { paymentDate: { $gte: startOfMonth, $lt: endOfMonth } } },
+        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+      ]),
+      Fee.aggregate([
+        { $match: { paymentDate: { $gte: startOfLastMonth, $lt: endOfLastMonth } } },
+        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
+      ]),
+      Student.aggregate([
+        { $group: {
+          _id: null,
+          totalPendingFees: { $sum: '$feesPending' },
+          totalExpectedFees: { $sum: '$totalFees' },
+          pendingFeesCount: { $sum: { $cond: [{ $gt: ['$feesPending', 0] }, 1, 0] } }
+        }}
+      ]),
+      Attendance.countDocuments({ date: startOfDay, status: 'Present' }),
+      Attendance.countDocuments({ date: startOfDay, status: 'Absent' }),
+      Attendance.countDocuments({ date: startOfDay, status: 'Late' })
     ]);
+
+    const todaysCollection = todaysFees.length > 0 ? todaysFees[0].total : 0;
+    const yesterdayCollection = yesterdayFees.length > 0 ? yesterdayFees[0].total : 0;
     const monthlyRevenue = monthlyFees.length > 0 ? monthlyFees[0].total : 0;
+    const lastMonthRevenue = lastMonthFees.length > 0 ? lastMonthFees[0].total : 0;
     
-    // Total pending and expected fees
-    const feeStats = await Student.aggregate([
-      { $group: {
-        _id: null,
-        totalPendingFees: { $sum: '$feesPending' },
-        totalExpectedFees: { $sum: '$totalFees' },
-        pendingFeesCount: { $sum: { $cond: [{ $gt: ['$feesPending', 0] }, 1, 0] } }
-      }}
-    ]);
+    const collectionDiff = todaysCollection - yesterdayCollection;
+    const revenueDiff = lastMonthRevenue > 0 ? Math.round(((monthlyRevenue - lastMonthRevenue) / lastMonthRevenue) * 100) : 0;
+
     const { totalPendingFees = 0, totalExpectedFees = 0, pendingFeesCount = 0 } = feeStats[0] || {};
-    
-    // Attendance Stats
-    const presentToday = await Attendance.countDocuments({ date: startOfDay, status: 'Present' });
-    const absentToday = await Attendance.countDocuments({ date: startOfDay, status: 'Absent' });
-    const lateToday = await Attendance.countDocuments({ date: startOfDay, status: 'Late' });
     
     res.json({
       totalStudents,
+      newStudentsThisMonth,
       todaysCollection,
+      collectionDiff,
       monthlyRevenue,
+      revenueDiff,
       totalPendingFees,
       totalExpectedFees,
       pendingFeesCount,
@@ -78,45 +110,72 @@ router.get('/charts', auth, async (req, res) => {
   try {
     let targetDate = new Date();
     if (req.query.date) {
-      const parsedDate = new Date(req.query.date);
-      if (!isNaN(parsedDate)) targetDate = parsedDate;
+      const [y, m, d] = req.query.date.split('-').map(Number);
+      targetDate = new Date(Date.UTC(y, m - 1, d));
+    } else {
+      targetDate.setUTCHours(0, 0, 0, 0);
     }
 
     // 1. Weekly Data (Last 7 Days)
+    const startOfWeekly = new Date(targetDate);
+    startOfWeekly.setUTCDate(startOfWeekly.getUTCDate() - 6);
+    startOfWeekly.setUTCHours(0, 0, 0, 0);
+    const endOfWeekly = new Date(targetDate);
+    endOfWeekly.setUTCDate(endOfWeekly.getUTCDate() + 1);
+    endOfWeekly.setUTCHours(0, 0, 0, 0);
+
+    const weeklyFeesRaw = await Fee.aggregate([
+      { $match: { paymentDate: { $gte: startOfWeekly, $lt: endOfWeekly } } },
+      { $group: {
+          _id: { $dateToString: { format: "%Y-%m-%d", date: "$paymentDate" } },
+          total: { $sum: '$amountPaid' }
+      }}
+    ]);
+
+    const weeklyMap = {};
+    weeklyFeesRaw.forEach(f => weeklyMap[f._id] = f.total);
+
     const weeklyData = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date(targetDate);
       d.setUTCDate(d.getUTCDate() - i);
-      const nd = new Date(d);
-      nd.setUTCDate(nd.getUTCDate() + 1);
-      
-      const dayFees = await Fee.aggregate([
-        { $match: { paymentDate: { $gte: d, $lt: nd } } },
-        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-      ]);
+      const dateStr = d.toISOString().split('T')[0];
       weeklyData.push({ 
-        day: d.toLocaleDateString('en-US', { weekday: 'short' }), 
-        amount: dayFees[0]?.total || 0 
+        day: d.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }), 
+        amount: weeklyMap[dateStr] || 0 
       });
     }
 
     // 2. Monthly Data (Last 4 Months)
+    const startOfMonthly = new Date(targetDate);
+    startOfMonthly.setUTCDate(1); // Set to 1st first to avoid month-end bugs
+    startOfMonthly.setUTCMonth(startOfMonthly.getUTCMonth() - 3);
+    startOfMonthly.setUTCHours(0,0,0,0);
+    const endOfMonthly = new Date(targetDate);
+    endOfMonthly.setUTCDate(1);
+    endOfMonthly.setUTCMonth(endOfMonthly.getUTCMonth() + 1);
+    endOfMonthly.setUTCHours(0,0,0,0);
+
+    const monthlyFeesRaw = await Fee.aggregate([
+      { $match: { paymentDate: { $gte: startOfMonthly, $lt: endOfMonthly } } },
+      { $group: {
+          _id: { $dateToString: { format: "%Y-%m", date: "$paymentDate" } },
+          total: { $sum: '$amountPaid' }
+      }}
+    ]);
+
+    const monthlyMap = {};
+    monthlyFeesRaw.forEach(f => monthlyMap[f._id] = f.total);
+
     const monthlyData = [];
     for (let i = 3; i >= 0; i--) {
       const d = new Date(targetDate);
-      d.setMonth(d.getMonth() - i);
-      d.setDate(1);
-      d.setHours(0,0,0,0);
-      const nm = new Date(d);
-      nm.setMonth(nm.getMonth() + 1);
-      
-      const monthFees = await Fee.aggregate([
-        { $match: { paymentDate: { $gte: d, $lt: nm } } },
-        { $group: { _id: null, total: { $sum: '$amountPaid' } } }
-      ]);
+      d.setUTCDate(1);
+      d.setUTCMonth(d.getUTCMonth() - i);
+      const monthStr = d.toISOString().split('-').slice(0, 2).join('-');
       monthlyData.push({ 
-        month: d.toLocaleDateString('en-US', { month: 'short' }), 
-        amount: monthFees[0]?.total || 0 
+        month: d.toLocaleDateString('en-US', { month: 'short', timeZone: 'UTC' }), 
+        amount: monthlyMap[monthStr] || 0 
       });
     }
 
