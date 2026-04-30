@@ -34,7 +34,7 @@ export default function Sidebar({ closeSidebar }) {
           <img src="/logo.png" alt="Logo" className="w-10 h-10 rounded-full bg-white object-contain" />
           <span className="text-sm font-semibold leading-tight text-text1">SKCC <br /> Management<br />System</span>
         </div>
-        <button className="md:hidden text-text2 hover:text-text1" onClick={closeSidebar}>
+        <button className="lg:hidden text-text2 hover:text-text1" onClick={closeSidebar}>
           <X size={20} />
         </button>
       </div>

@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
 const Class = require('../models/Class');
+const Teacher = require('../models/Teacher');
 
 // GET attendance for a specific class on a specific date
 router.get('/class/:classId', auth, async (req, res) => {
@@ -94,6 +95,14 @@ router.post('/mark', auth, async (req, res) => {
 
     await Attendance.bulkWrite(operations);
 
+    // Audit Log
+    const className = await Class.findById(classId).select('className');
+    await AuditLog.create({ 
+      adminId: req.admin.id, 
+      action: req.admin.role === 'teacher' ? 'TEACHER_MARK_ATTENDANCE' : 'ADMIN_MARK_ATTENDANCE', 
+      details: `Marked attendance for class: ${className?.className || 'Unknown'} on ${date}` 
+    });
+
     res.json({ msg: 'Attendance saved successfully' });
   } catch (err) {
     console.error(err.message);
@@ -112,10 +121,20 @@ router.get('/stats', auth, async (req, res) => {
       targetDate.setUTCHours(0, 0, 0, 0);
     }
 
-    const totalStudents = await Student.countDocuments();
-    const presentToday = await Attendance.countDocuments({ date: targetDate, status: 'Present' });
-    const absentToday = await Attendance.countDocuments({ date: targetDate, status: 'Absent' });
-    const lateToday = await Attendance.countDocuments({ date: targetDate, status: 'Late' });
+    // Teacher permission check
+    if (req.admin.role === 'teacher') {
+      const teacher = await Teacher.findById(req.admin.id);
+      if (!teacher || !teacher.permissions.canAccessReports) {
+        return res.status(403).json({ msg: 'Access Denied: You do not have permission to view reports.' });
+      }
+    }
+
+    const [totalStudents, presentToday, absentToday, lateToday] = await Promise.all([
+      Student.countDocuments(),
+      Attendance.countDocuments({ date: targetDate, status: 'Present' }),
+      Attendance.countDocuments({ date: targetDate, status: 'Absent' }),
+      Attendance.countDocuments({ date: targetDate, status: 'Late' })
+    ]);
 
     res.json({
       totalStudents,
@@ -136,14 +155,22 @@ router.get('/student/:studentId', auth, async (req, res) => {
     const student = await Student.findById(req.params.studentId).populate('assignedClass');
     if (!student) return res.status(404).json({ msg: 'Student not found' });
 
-    const records = await Attendance.find({ student: req.params.studentId }).sort({ date: -1 });
+    const [records, statsData] = await Promise.all([
+      Attendance.find({ student: req.params.studentId }).sort({ date: -1 }),
+      Attendance.aggregate([
+        { $match: { student: new mongoose.Types.ObjectId(req.params.studentId) } },
+        { $group: {
+            _id: null,
+            total: { $sum: 1 },
+            present: { $sum: { $cond: [{ $eq: ['$status', 'Present'] }, 1, 0] } },
+            absent: { $sum: { $cond: [{ $eq: ['$status', 'Absent'] }, 1, 0] } },
+            late: { $sum: { $cond: [{ $eq: ['$status', 'Late'] }, 1, 0] } }
+        }}
+      ])
+    ]);
     
-    const total = records.length;
-    const present = records.filter(r => r.status === 'Present').length;
-    const absent = records.filter(r => r.status === 'Absent').length;
-    const late = records.filter(r => r.status === 'Late').length;
-
-    const percentage = total > 0 ? Math.round(((present + late) / total) * 100) : 0;
+    const stats = statsData[0] || { total: 0, present: 0, absent: 0, late: 0 };
+    const percentage = stats.total > 0 ? Math.round(((stats.present + stats.late) / stats.total) * 100) : 0;
 
     res.json({
       student: {
@@ -154,7 +181,7 @@ router.get('/student/:studentId', auth, async (req, res) => {
         feesPending: student.feesPending
       },
       records,
-      stats: { total, present, absent, late, percentage }
+      stats: { ...stats, percentage }
     });
   } catch (err) {
     console.error(err.message);
@@ -168,6 +195,14 @@ router.get('/absentees', auth, async (req, res) => {
     const { date, classId } = req.query;
     if (!date) return res.status(400).json({ msg: 'Date is required' });
 
+    // Teacher permission check
+    if (req.admin.role === 'teacher') {
+      const teacher = await Teacher.findById(req.admin.id);
+      if (!teacher || !teacher.permissions.canAccessReports) {
+        return res.status(403).json({ msg: 'Access Denied: You do not have permission to view reports.' });
+      }
+    }
+
     const [year, month, day] = date.split('-').map(Number);
     const targetDate = new Date(Date.UTC(year, month - 1, day));
 
@@ -175,10 +210,19 @@ router.get('/absentees', auth, async (req, res) => {
     if (classId) query.classId = classId;
 
     const absentees = await Attendance.find(query)
-      .populate('student', 'fullName mobileNo assignedClass')
+      .populate('student', 'fullName contactNumber assignedClass')
       .populate('classId', 'className batchName');
 
-    res.json(absentees);
+    // Map contactNumber to mobileNo for frontend compatibility
+    const result = absentees.map(a => {
+      const obj = a.toObject();
+      if (obj.student) {
+        obj.student.mobileNo = obj.student.contactNumber;
+      }
+      return obj;
+    });
+
+    res.json(result);
   } catch (err) {
     res.status(500).send('Server Error');
   }
@@ -188,6 +232,16 @@ router.get('/absentees', auth, async (req, res) => {
 router.get('/report/monthly/:classId', auth, async (req, res) => {
   try {
     const { month, year } = req.query; // 1-12, e.g., 4, 2026
+    if (!month || !year) return res.status(400).json({ msg: 'Month and Year are required' });
+
+    // Teacher permission check
+    if (req.admin.role === 'teacher') {
+      const teacher = await Teacher.findById(req.admin.id);
+      if (!teacher || !teacher.permissions.canAccessReports) {
+        return res.status(403).json({ msg: 'Access Denied: You do not have permission to view reports.' });
+      }
+    }
+
     const classId = req.params.classId;
 
     const startDate = new Date(Date.UTC(year, month - 1, 1));

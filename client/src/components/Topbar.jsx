@@ -26,7 +26,7 @@ export default function Topbar({ toggleSidebar }) {
   return (
     <div className="sticky top-0 z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface border-b border-border px-4 py-3 md:px-7 md:py-4">
       <div className="flex items-center gap-3">
-        <button onClick={toggleSidebar} className="md:hidden p-1.5 -ml-1.5 text-text2 hover:text-text1 rounded-md hover:bg-card">
+        <button onClick={toggleSidebar} className="lg:hidden p-1.5 -ml-1.5 text-text2 hover:text-text1 rounded-md hover:bg-card">
           <Menu size={22} />
         </button>
         <div>
@@ -35,7 +35,7 @@ export default function Topbar({ toggleSidebar }) {
         </div>
       </div>
       
-      <div className="flex items-center justify-between w-full md:w-auto gap-3">
+      <div className="flex items-center justify-between w-full lg:w-auto gap-3">
         <div className="relative group">
           <div className="flex items-center justify-between bg-card border border-border rounded-lg px-3 py-1.5 min-w-[140px] group-hover:border-border2 transition-all cursor-pointer">
             <span className="text-[12.5px] font-bold text-text1 mr-2">

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
-import { Download, Plus, Receipt, Search } from 'lucide-react';
+import { Download, Plus, Receipt, Search, Trash2 } from 'lucide-react';
 
 export default function Fees() {
   const [fees, setFees] = useState([]);
@@ -72,6 +72,18 @@ export default function Fees() {
       console.error(error);
       const msg = error.response?.data?.error || error.message;
       alert("Failed to record fee: " + msg);
+    }
+  };
+
+  const handleDeleteFee = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this fee record? This will revert the student's paid balance.")) return;
+    try {
+      await axios.delete(`/api/fees/${id}`);
+      fetchFees();
+      fetchStudents();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete fee record.");
     }
   };
 
@@ -359,9 +371,14 @@ export default function Fees() {
                 <td><span className="badge badge-green">₹{fee.amountPaid.toLocaleString()}</span></td>
                 <td style={{ color: 'var(--text2)' }}>{new Date(fee.paymentDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
                 <td>
-                  <button onClick={() => generateReceipt(fee)} className="btn" style={{ background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)', padding: '4px 10px', fontSize: '11px' }}>
-                    <Download size={12} /> Download
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => generateReceipt(fee)} className="btn" style={{ background: 'rgba(79, 124, 255, 0.1)', color: 'var(--accent)', padding: '4px 10px', fontSize: '11px' }}>
+                      <Download size={12} /> Download
+                    </button>
+                    <button onClick={() => handleDeleteFee(fee._id)} className="btn btn-danger" style={{ padding: '4px 8px' }}>
+                      <Trash2 size={12} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

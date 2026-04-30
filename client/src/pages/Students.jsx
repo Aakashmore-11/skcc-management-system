@@ -6,6 +6,14 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
+const getLocalDate = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export default function Students() {
   const [students, setStudents] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,7 +30,7 @@ export default function Students() {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [formData, setFormData] = useState({
-    fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: ''
+    fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: '', admissionDate: getLocalDate()
   });
 
   useEffect(() => {
@@ -77,7 +85,7 @@ export default function Students() {
       }
       setShowForm(false);
       setIsEditing(null);
-      setFormData({ fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: '' });
+      setFormData({ fullName: '', address: '', contactNumber: '', parentContact: '', assignedClass: '', totalFees: '', admissionDate: getLocalDate() });
       fetchStudents(currentPage);
     } catch (error) {
       console.error(error);
@@ -92,7 +100,8 @@ export default function Students() {
       contactNumber: student.contactNumber,
       parentContact: student.parentContact || '',
       assignedClass: student.assignedClass?._id || '',
-      totalFees: student.totalFees
+      totalFees: student.totalFees,
+      admissionDate: student.admissionDate ? student.admissionDate.split('T')[0] : getLocalDate()
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -208,6 +217,10 @@ export default function Students() {
           </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="form-group mb-0"><label className="form-label">Full Name</label><input type="text" className="form-control" placeholder="Student's name" value={formData.fullName} onChange={e => setFormData({...formData, fullName: e.target.value})} required /></div>
+            <div className="form-group mb-0">
+              <label className="form-label">Admission Date</label>
+              <input type="date" className="form-control" value={formData.admissionDate} onChange={e => setFormData({...formData, admissionDate: e.target.value})} required />
+            </div>
             <div className="form-group mb-0">
               <label className="form-label">Contact Number</label>
               <input 

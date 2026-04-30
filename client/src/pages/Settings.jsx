@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Settings as SettingsIcon, User, Lock, CheckCircle2, AlertCircle, Trash2, ShieldAlert, Key } from 'lucide-react';
+import { 
+  Lock, 
+  CheckCircle2, 
+  AlertCircle, 
+  Trash2, 
+  ShieldAlert, 
+  Key,
+  ShieldCheck,
+  Info,
+  ChevronRight
+} from 'lucide-react';
 
 export default function Settings() {
   const [formData, setFormData] = useState({
@@ -14,7 +24,6 @@ export default function Settings() {
   const [masterPassword, setMasterPassword] = useState('');
   const [isResetting, setIsResetting] = useState(false);
   
-  // OTP Verification State
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [otpInfo, setOtpInfo] = useState({ msg: '', emailSent: false });
@@ -41,7 +50,7 @@ export default function Settings() {
     }
 
     if (!formData.username && !formData.password) {
-      return setStatus({ type: 'error', msg: 'Please provide at least one change.' });
+      return setStatus({ type: 'error', msg: 'Provide at least one change.' });
     }
 
     setLoading(true);
@@ -51,8 +60,7 @@ export default function Settings() {
       setShowOtpModal(true);
       setStatus({ type: 'success', msg: res.data.msg });
     } catch (err) {
-      console.error(err);
-      setStatus({ type: 'error', msg: err.response?.data?.msg || 'Failed to request OTP.' });
+      setStatus({ type: 'error', msg: err.response?.data?.msg || 'OTP request failed.' });
     } finally {
       setLoading(false);
     }
@@ -67,13 +75,12 @@ export default function Settings() {
       if (formData.password) updateData.password = formData.password;
 
       await axios.put('/api/auth/update', updateData);
-      setStatus({ type: 'success', msg: 'Credentials updated successfully!' });
+      setStatus({ type: 'success', msg: 'Credentials updated!' });
       setFormData({ username: '', password: '', confirmPassword: '' });
       setShowOtpModal(false);
       setOtpCode('');
       fetchAdminData();
     } catch (err) {
-      console.error(err);
       setStatus({ type: 'error', msg: err.response?.data?.msg || 'Verification failed.' });
     } finally {
       setLoading(false);
@@ -81,206 +88,193 @@ export default function Settings() {
   };
 
   const handleSystemReset = async () => {
-    if (resetConfirm !== 'RESET ALL DATA') {
-      alert('Step 1 Failed: Please type "RESET ALL DATA" exactly to confirm.');
+    if (resetConfirm !== 'RESET ALL DATA' || masterPassword !== 'GJ05DT6333') {
+      alert('Verification failed.');
       return;
     }
 
-    if (masterPassword !== 'GJ05DT6333') {
-      alert('Step 2 Failed: Incorrect Master Authorization Password.');
-      return;
-    }
-
-    if (!window.confirm('FINAL WARNING: This is IRREVERSIBLE. All students, classes, fees, and event records will be PERMANENTLY DELETED. Are you absolutely sure?')) {
-      return;
-    }
+    if (!window.confirm('IRREVERSIBLE: Are you absolutely sure?')) return;
 
     setIsResetting(true);
     try {
       await axios.delete('/api/system/reset');
-      alert('System has been successfully reset. All operational data has been deleted.');
-      setResetConfirm('');
-      setMasterPassword('');
+      alert('System reset successful.');
       window.location.reload();
     } catch (err) {
-      console.error(err);
-      alert('Failed to reset system. Check server logs.');
+      alert('Reset failed.');
     } finally {
       setIsResetting(false);
     }
   };
 
   return (
-    <div className="max-w-[800px] mx-auto pb-10">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5">
+    <div className="max-w-3xl mx-auto space-y-6 pb-12 animate-in fade-in duration-500">
+      {/* Compact Header */}
+      <div className="flex items-center justify-between border-b border-border pb-4">
         <div>
-          <div className="card-title text-[18px]">System Settings</div>
-          <div className="card-subtitle">Manage administrative credentials and system maintenance.</div>
+          <h1 className="text-xl font-bold text-text1">System Settings</h1>
+          <p className="text-[12px] text-text3">Administrative controls & security</p>
+        </div>
+        <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-surface/50 rounded-lg border border-border">
+          <div className="w-1.5 h-1.5 rounded-full bg-green" />
+          <span className="text-[10px] font-bold text-text3 uppercase tracking-wider">v1.2.0 Stable</span>
         </div>
       </div>
 
-      {/* Security Section */}
-      <div className="chart-card mb-8">
-        <div className="card-title mb-6 flex items-center gap-2">
-          <Lock size={18} color="var(--accent)" /> Admin Security
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          {status.msg && (
-            <div className={`p-3 rounded-lg flex items-center gap-2 text-sm ${status.type === 'success' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-              {status.type === 'success' ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
-              {status.msg}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="form-group mb-0">
-              <label className="form-label flex items-center gap-2">
-                <User size={14} /> New Username
-              </label>
-              <input
-                type="text"
-                className="form-control"
-                placeholder="Keep current"
-                value={formData.username}
-                onChange={e => setFormData({ ...formData, username: e.target.value })}
-              />
-            </div>
-
-            <div className="form-group mb-0">
-              <label className="form-label flex items-center gap-2">
-                <Lock size={14} /> New Password
-              </label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={e => setFormData({ ...formData, password: e.target.value })}
-              />
-            </div>
-
-            <div className="form-group mb-0 md:col-start-2">
-              <label className="form-label">Confirm Password</label>
-              <input
-                type="password"
-                className="form-control"
-                placeholder="••••••••"
-                value={formData.confirmPassword}
-                onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="pt-2">
-            <button
-              type="submit"
-              className="btn btn-primary w-full md:w-auto px-10"
-              disabled={loading}
-            >
-              {loading ? 'Updating...' : 'Save Security Changes'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="chart-card border border-red-500/20">
-        <div className="card-title mb-4 flex items-center gap-2 text-red-500">
-          <ShieldAlert size={18} /> Danger Zone (System Reset)
-        </div>
-        <p className="text-sm text-text3 mb-6 leading-relaxed">
-          The following action is destructive and irreversible. You must complete two steps of verification to proceed.
-        </p>
-
-        <div className="space-y-4 bg-red-500/5 p-4 rounded-xl border border-red-500/10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="form-group mb-0">
-              <label className="form-label text-red-400 text-xs uppercase tracking-wider font-bold mb-2">Step 1: Type Confirmation Phrase</label>
-              <input
-                type="text"
-                className="form-control border-red-500/20 focus:border-red-500"
-                placeholder="RESET ALL DATA"
-                value={resetConfirm}
-                onChange={e => setResetConfirm(e.target.value)}
-              />
-            </div>
-
-            <div className="form-group mb-0">
-              <label className="form-label text-red-400 text-xs uppercase tracking-wider font-bold mb-2 flex items-center gap-1">
-                Step 2: Master Password
-              </label>
-              <input
-                type="password"
-                className="form-control border-red-500/20 focus:border-red-500"
-                placeholder="Enter authorization key"
-                value={masterPassword}
-                onChange={e => setMasterPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <button
-            onClick={handleSystemReset}
-            disabled={resetConfirm !== 'RESET ALL DATA' || masterPassword === '' || isResetting}
-            className={`btn w-full flex items-center justify-center gap-2 h-[42px] transition-all duration-300 ${resetConfirm === 'RESET ALL DATA' && masterPassword === 'GJ05DT6333' ? 'bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20' : 'bg-red-500/10 text-red-500/40 cursor-not-allowed'}`}
-          >
-            <Trash2 size={16} />
-            {isResetting ? 'Wiping Databases...' : 'Format All System Data'}
-          </button>
-
-          <div className="text-[10px] text-center text-red-500/50 mt-2 italic">
-            This action will clear all Student, Fee, Class, and Event databases.
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-8 opacity-60 text-center">
-        <p className="text-xs text-text3">
-          Last system backup: Not configured • Version 1.0.5
-        </p>
-      </div>
-
-      {/* OTP Verification Modal */}
-      {showOtpModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="chart-card w-full max-w-[400px] shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6">
-              <div className="card-title flex items-center gap-2">
-                <ShieldAlert size={18} color="var(--accent)" /> Security Verification
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        {/* Left: Summary */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-card/30 border border-border rounded-2xl p-5">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                <ShieldCheck size={20} />
               </div>
-              <button onClick={() => setShowOtpModal(false)} className="text-text3 hover:text-text1">
-                <AlertCircle size={20} />
+              <div>
+                <p className="text-[10px] font-bold text-text3 uppercase tracking-wider">Auth Level</p>
+                <p className="text-sm font-bold text-text1">SuperUser Access</p>
+              </div>
+            </div>
+            <div className="space-y-3 pt-3 border-t border-border">
+              <div className="flex justify-between text-[12px]">
+                <span className="text-text3">Username:</span>
+                <span className="text-text2 font-medium">@{formData.username || 'admin'}</span>
+              </div>
+              <div className="flex justify-between text-[12px]">
+                <span className="text-text3">2FA Status:</span>
+                <span className="text-green font-medium">Email OTP Active</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-4">
+            <p className="text-[11px] text-text3 leading-relaxed italic">
+              Credential updates require administrative authorization via OTP.
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Forms */}
+        <div className="lg:col-span-3 space-y-6">
+          <div className="bg-card/40 border border-border rounded-2xl p-6 shadow-sm">
+            <h2 className="text-sm font-bold text-text1 mb-5 flex items-center gap-2">
+              <Key size={14} className="text-accent" /> Security Credentials
+            </h2>
+
+            {status.msg && (
+              <div className={`mb-5 p-3 rounded-xl flex items-center gap-2 text-[12px] ${
+                status.type === 'success' ? 'bg-green/5 text-green border border-green/10' : 'bg-red/5 text-red border border-red/10'
+              }`}>
+                {status.type === 'success' ? <CheckCircle2 size={14} /> : <AlertCircle size={14} />}
+                {status.msg}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold text-text3 uppercase ml-1">Admin Username</label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-2.5 bg-surface/40 border border-border rounded-xl text-text1 text-[13px] outline-none focus:border-accent/50 transition-all"
+                  placeholder="Keep current"
+                  value={formData.username}
+                  onChange={e => setFormData({ ...formData, username: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-text3 uppercase ml-1">New Password</label>
+                  <input
+                    type="password"
+                    className="w-full px-4 py-2.5 bg-surface/40 border border-border rounded-xl text-text1 text-[13px] outline-none focus:border-accent/50 transition-all"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-text3 uppercase ml-1">Confirm</label>
+                  <input
+                    type="password"
+                    className="w-full px-4 py-2.5 bg-surface/40 border border-border rounded-xl text-text1 text-[13px] outline-none focus:border-accent/50 transition-all"
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full sm:w-auto px-8 py-2.5 bg-accent hover:bg-accent/90 text-white rounded-xl text-[13px] font-bold transition-all shadow-lg shadow-accent/10 flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {loading ? 'Updating...' : 'Save Credentials'}
+                {!loading && <ChevronRight size={14} />}
+              </button>
+            </form>
+          </div>
+
+          {/* Minimal Danger Zone */}
+          <div className="bg-card/40 border border-red-500/20 rounded-2xl p-6">
+            <h2 className="text-sm font-bold text-red mb-3 flex items-center gap-2">
+              <ShieldAlert size={14} /> Danger Zone
+            </h2>
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <input
+                  type="text"
+                  className="w-full px-3 py-2 bg-red-500/5 border border-red-500/10 rounded-lg text-text1 text-[12px] outline-none focus:border-red-500/40"
+                  placeholder="RESET ALL DATA"
+                  value={resetConfirm}
+                  onChange={e => setResetConfirm(e.target.value)}
+                />
+                <input
+                  type="password"
+                  className="w-full px-3 py-2 bg-red-500/5 border border-red-500/10 rounded-lg text-text1 text-[12px] outline-none focus:border-red-500/40"
+                  placeholder="Master Password"
+                  value={masterPassword}
+                  onChange={e => setMasterPassword(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={handleSystemReset}
+                disabled={resetConfirm !== 'RESET ALL DATA' || masterPassword === '' || isResetting}
+                className="w-full py-2.5 bg-red/10 hover:bg-red text-red hover:text-white rounded-xl text-[12px] font-bold transition-all disabled:opacity-30 border border-red/20"
+              >
+                {isResetting ? 'Wiping...' : 'Authorize System Format'}
               </button>
             </div>
+          </div>
+        </div>
+      </div>
 
-            <p className="text-sm text-text3 mb-6 text-center">
-              {otpInfo.msg}. Enter the code below to authorize the changes.
-            </p>
+      {/* OTP Modal - Minimal */}
+      {showOtpModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-bg/80 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-card border border-border w-full max-w-[360px] rounded-2xl p-8 shadow-2xl">
+            <div className="text-center">
+              <h2 className="text-lg font-bold text-text1">Verification</h2>
+              <p className="text-[12px] text-text3 mt-1 px-4">{otpInfo.msg || 'Enter OTP to continue.'}</p>
 
-            <form onSubmit={handleVerifyAndSave} className="space-y-4">
-              <div className="form-group">
-                <label className="form-label">Enter 6-Digit Code</label>
+              <form onSubmit={handleVerifyAndSave} className="mt-6 space-y-6">
                 <input
                   type="text"
                   maxLength="6"
-                  className="form-control text-center text-2xl font-mono tracking-[0.5em]"
+                  className="w-full bg-surface border border-border rounded-xl py-4 text-center text-2xl font-mono tracking-[0.4em] text-accent outline-none"
                   placeholder="000000"
                   value={otpCode}
                   onChange={e => setOtpCode(e.target.value)}
                   required
-                  autoFocus
                 />
-              </div>
-
-              <button type="submit" className="btn btn-primary w-full h-[46px]" disabled={loading}>
-                {loading ? 'Verifying...' : 'Verify & Save Changes'}
-              </button>
-              
-              <button type="button" onClick={() => setShowOtpModal(false)} className="w-full text-xs text-text3 hover:text-text1 py-2">
-                Cancel and return to form
-              </button>
-            </form>
+                <div className="flex flex-col gap-3">
+                  <button type="submit" className="w-full py-3 bg-accent text-white rounded-xl font-bold text-sm" disabled={loading}>
+                    {loading ? 'Verifying...' : 'Verify & Save'}
+                  </button>
+                  <button type="button" onClick={() => setShowOtpModal(false)} className="text-xs text-text3 font-medium">Cancel</button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

@@ -59,6 +59,37 @@ router.get('/me', auth, async (req, res) => {
   }
 });
 
+// @route   PUT api/teachers/me/password
+// @desc    Update current teacher password
+// @access  Private
+router.put('/me/password', auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ msg: 'Please provide all fields' });
+    }
+
+    const teacher = await Teacher.findById(req.admin.id);
+    if (!teacher) return res.status(404).json({ msg: 'Teacher not found' });
+
+    const isMatch = await bcrypt.compare(currentPassword, teacher.password);
+    if (!isMatch) return res.status(400).json({ msg: 'Current password is incorrect' });
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ msg: 'New password must be at least 6 characters' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    teacher.password = await bcrypt.hash(newPassword, salt);
+    await teacher.save();
+
+    res.json({ msg: 'Password updated successfully' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // Admin routes for Teacher Credential Management
 // @route   GET api/teachers
 router.get('/', auth, async (req, res) => {

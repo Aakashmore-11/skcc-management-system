@@ -8,10 +8,11 @@ const EventFee = require('../models/EventFee');
 const EventExpense = require('../models/EventExpense');
 const AuditLog = require('../models/AuditLog');
 const auth = require('../middleware/auth');
+const adminOnly = require('../middleware/adminOnly');
 
 // @route   DELETE api/system/reset
 // @desc    Wipe all system data except admin accounts
-router.delete('/reset', auth, async (req, res) => {
+router.delete('/reset', [auth, adminOnly], async (req, res) => {
   try {
     // Delete in order to avoid potential (though unlikely in Mongo) orphan issues
     await Fee.deleteMany({});
@@ -30,7 +31,7 @@ router.delete('/reset', auth, async (req, res) => {
 
 // @route   GET api/system/audit-logs
 // @desc    Get all audit logs
-router.get('/audit-logs', auth, async (req, res) => {
+router.get('/audit-logs', [auth, adminOnly], async (req, res) => {
   try {
     const logs = await AuditLog.find().sort({ createdAt: -1 }).limit(100);
     res.json(logs);

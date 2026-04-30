@@ -5,8 +5,9 @@ const Fee = require('../models/Fee');
 const Class = require('../models/Class');
 const Attendance = require('../models/Attendance');
 const auth = require('../middleware/auth');
+const adminOnly = require('../middleware/adminOnly');
 
-router.get('/summary', auth, async (req, res) => {
+router.get('/summary', [auth, adminOnly], async (req, res) => {
   try {
     let targetDate = new Date();
     if (req.query.date) {
@@ -106,7 +107,7 @@ router.get('/summary', auth, async (req, res) => {
   }
 });
 
-router.get('/charts', auth, async (req, res) => {
+router.get('/charts', [auth, adminOnly], async (req, res) => {
   try {
     let targetDate = new Date();
     if (req.query.date) {

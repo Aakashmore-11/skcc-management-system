@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Event = require('../models/Event');
 const EventFee = require('../models/EventFee');
+const EventExpense = require('../models/EventExpense');
+const auth = require('../middleware/auth');
 
 // Create a new event/function
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const newEvent = new Event(req.body);
     const savedEvent = await newEvent.save();
@@ -15,7 +17,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get all events
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const events = await Event.find().sort({ eventDate: -1 });
     res.json(events);
@@ -25,7 +27,7 @@ router.get('/', async (req, res) => {
 });
 
 // Delete an event
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     await EventFee.deleteMany({ event: req.params.id });
     await Event.findByIdAndDelete(req.params.id);
@@ -36,7 +38,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Record fee payment for an event
-router.post('/fees', async (req, res) => {
+router.post('/fees', auth, async (req, res) => {
   try {
     const newFee = new EventFee(req.body);
     const savedFee = await newFee.save();
@@ -46,12 +48,8 @@ router.post('/fees', async (req, res) => {
   }
 });
 
-const EventExpense = require('../models/EventExpense');
-
-// ... (keep the top of the file as is, just inserting below)
-
 // Get all fee payments for a specific event
-router.get('/:eventId/fees', async (req, res) => {
+router.get('/:eventId/fees', auth, async (req, res) => {
   try {
     const fees = await EventFee.find({ event: req.params.eventId })
       .populate({
@@ -67,7 +65,7 @@ router.get('/:eventId/fees', async (req, res) => {
 });
 
 // Record an expense for an event
-router.post('/expenses', async (req, res) => {
+router.post('/expenses', auth, async (req, res) => {
   try {
     const newExpense = new EventExpense(req.body);
     const savedExpense = await newExpense.save();
@@ -78,7 +76,7 @@ router.post('/expenses', async (req, res) => {
 });
 
 // Get all expenses for a specific event
-router.get('/:eventId/expenses', async (req, res) => {
+router.get('/:eventId/expenses', auth, async (req, res) => {
   try {
     const expenses = await EventExpense.find({ event: req.params.eventId })
       .sort({ expenseDate: -1 });
@@ -89,7 +87,7 @@ router.get('/:eventId/expenses', async (req, res) => {
 });
 
 // Delete an expense
-router.delete('/expenses/:id', async (req, res) => {
+router.delete('/expenses/:id', auth, async (req, res) => {
   try {
     await EventExpense.findByIdAndDelete(req.params.id);
     res.json({ message: 'Expense deleted' });

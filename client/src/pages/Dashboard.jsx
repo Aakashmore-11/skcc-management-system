@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import axios from "axios";
 import {
   Users,
@@ -32,58 +32,11 @@ import {
 /* ─── Design tokens ──────────────────────────────────────────── */
 /* CSS has been moved to index.css */
 
-/* ─── Mock / real data config ─────────────────────────────────── */
-const MOCK_SUMMARY = {
-  totalStudents: 348,
-  todaysCollection: 42500,
-  monthlyRevenue: 312000,
-  totalPendingFees: 87600,
-};
-
-const WEEKLY_DATA = [
-  { day: "Mon", amount: 18400 },
-  { day: "Tue", amount: 27600 },
-  { day: "Wed", amount: 22100 },
-  { day: "Thu", amount: 35800 },
-  { day: "Fri", amount: 42500 },
-  { day: "Sat", amount: 31200 },
-];
-
-const MONTHLY_DATA = [
-  { month: "Jan", amount: 210000 },
-  { month: "Feb", amount: 190000 },
-  { month: "Mar", amount: 260000 },
-  { month: "Apr", amount: 312000 },
-];
-
-const DONUT_DATA = [
-  { name: "Paid", value: 72, color: "#4f7cff" },
-  { name: "Partial", value: 18, color: "#f5a623" },
-  { name: "Pending", value: 10, color: "#f04b4b" },
-];
-
-const CLASS_PROGRESS = [
-  { name: "Grade 9", collected: 82, color: "#4f7cff" },
-  { name: "Grade 10", collected: 65, color: "#22d48f" },
-  { name: "Grade 11", collected: 91, color: "#7c5cff" },
-  { name: "Grade 7", collected: 48, color: "#f5a623" },
-];
-
-const RECENT_PAYMENTS = [
-  { id: "STU-0291", name: "Ananya Rao", initials: "AR", cls: "9-A", amount: 12500, date: "25 Apr", status: "Paid", bg: "#1e3a6e" },
-  { id: "STU-0187", name: "Rohan Verma", initials: "RV", cls: "11-B", amount: 8000, date: "24 Apr", status: "Partial", bg: "#3b2a6e" },
-  { id: "STU-0344", name: "Meera Patel", initials: "MP", cls: "7-C", amount: 14200, date: "24 Apr", status: "Paid", bg: "#0d3a32" },
-  { id: "STU-0102", name: "Kabir Shah", initials: "KS", cls: "5-A", amount: 6500, date: "23 Apr", status: "Overdue", bg: "#3a1a1a" },
-  { id: "STU-0219", name: "Nisha Singh", initials: "NS", cls: "10-D", amount: 11000, date: "23 Apr", status: "Paid", bg: "#1e3a6e" },
-];
-
 const NAV_ITEMS = [
-  { icon: "⊞", label: "Dashboard", active: true, badge: null },
-  { icon: "◎", label: "Students", active: false, badge: null },
-  { icon: "₹", label: "Fees", active: false, badge: "3" },
-  { icon: "⊡", label: "Reports", active: false, badge: null },
-  { icon: "◱", label: "Schedule", active: false, badge: null },
-  { icon: "◷", label: "Settings", active: false, badge: null },
+  { icon: "⊞", label: "Dashboard", path: "/" },
+  { icon: "◎", label: "Students", path: "/students" },
+  { icon: "₹", label: "Fees", path: "/fees" },
+  { icon: "⊡", label: "Events", path: "/events" },
 ];
 
 /* ─── Helpers ─────────────────────────────────────────────────── */
@@ -423,7 +376,7 @@ export default function Dashboard() {
                 <div className="card-title">Recent Payments</div>
                 <div style={{ fontSize: 12, color: "var(--text2)", marginTop: 2 }}>Last 5 transactions</div>
               </div>
-              <div className="view-all">View all <ChevronRight size={13} /></div>
+              <Link to="/fees" className="view-all" style={{ textDecoration: 'none' }}>View all <ChevronRight size={13} /></Link>
             </div>
           </div>
           <div className="overflow-x-auto">

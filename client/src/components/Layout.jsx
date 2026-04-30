@@ -11,20 +11,20 @@ export default function Layout() {
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-20 md:hidden" 
+          className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 lg:hidden" 
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
       
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-30 w-[240px] transform transition-transform duration-300 md:relative md:translate-x-0 bg-surface border-r border-border ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-[240px] transform transition-transform duration-300 lg:relative lg:translate-x-0 bg-surface border-r border-border ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <Sidebar closeSidebar={() => setIsSidebarOpen(false)} />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <Topbar toggleSidebar={() => setIsSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>

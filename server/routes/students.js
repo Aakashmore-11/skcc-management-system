@@ -2,10 +2,14 @@ const express = require('express');
 const router = express.Router();
 const Student = require('../models/Student');
 const Class = require('../models/Class');
+const Fee = require('../models/Fee');
+const Attendance = require('../models/Attendance');
+const AuditLog = require('../models/AuditLog');
 const auth = require('../middleware/auth');
+const adminOnly = require('../middleware/adminOnly');
 
 // Get students with pagination
-router.get('/', auth, async (req, res) => {
+router.get('/', [auth, adminOnly], async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
@@ -31,7 +35,7 @@ router.get('/', auth, async (req, res) => {
 });
 
 // Add new student
-router.post('/', auth, async (req, res) => {
+router.post('/', [auth, adminOnly], async (req, res) => {
   try {
     const { fullName, address, contactNumber, parentContact, assignedClass, totalFees } = req.body;
 
@@ -58,7 +62,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Update student
-router.put('/:id', auth, async (req, res) => {
+router.put('/:id', [auth, adminOnly], async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ msg: 'Student not found' });
@@ -80,17 +84,38 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
-// Delete student
-router.delete('/:id', auth, async (req, res) => {
+// @route   DELETE api/students/:id
+// @desc    Delete a student and their related data
+router.delete('/:id', [auth, adminOnly], async (req, res) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const studentId = req.params.id;
+    const student = await Student.findById(studentId);
+    
     if (!student) return res.status(404).json({ msg: 'Student not found' });
     
+    // Update class count
     await Class.findByIdAndUpdate(student.assignedClass, { $inc: { totalStudents: -1 } });
-    await student.deleteOne();
+
+    // Delete related records
+    await Promise.all([
+      Fee.deleteMany({ student: studentId }),
+      Attendance.deleteMany({ student: studentId })
+    ]);
     
-    res.json({ msg: 'Student removed' });
+    await Student.findByIdAndDelete(studentId);
+
+    // Log deletion
+    try {
+      await AuditLog.create({ 
+        adminId: req.admin.id, 
+        action: 'DELETE_STUDENT', 
+        details: `Deleted student: ${student.fullName} (ID: ${studentId}) and all associated records.` 
+      });
+    } catch(e) { console.error('Audit Log Error:', e) }
+
+    res.json({ msg: 'Student and associated data deleted' });
   } catch (err) {
+    console.error(err.message);
     res.status(500).send('Server Error');
   }
 });

@@ -5,6 +5,7 @@ import Cookies from 'js-cookie';
 const NAV_ITEMS = [
   { icon: "✓", label: "Mark Attendance", path: "/attendance" },
   { icon: "📊", label: "Monitor & Reports", path: "/monitor" },
+  { icon: "⚙️", label: "Settings", path: "/settings" },
 ];
 
 export default function Sidebar({ closeSidebar, permissions: propPermissions }) {

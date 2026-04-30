@@ -3,6 +3,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Attendance from './pages/Attendance';
 import AttendanceMonitor from './pages/AttendanceMonitor';
+import Settings from './pages/Settings';
 import Cookies from 'js-cookie';
 
 const ProtectedRoute = ({ children }) => {
@@ -20,6 +21,7 @@ function App() {
           <Route index element={<Navigate to="/attendance" />} />
           <Route path="attendance" element={<Attendance />} />
           <Route path="monitor" element={<AttendanceMonitor />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </Router>
